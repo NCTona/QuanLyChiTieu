@@ -369,7 +369,7 @@ fun CategoryIconWithName(
                 text = amountText,
                 fontFamily = montserrat,
                 fontWeight = FontWeight.Bold,
-                color = if (transactionType == "expense") textColor else Color(0xff37c8ec),
+                color = if (transactionType == "expense") primaryColor else Color(0xff37c8ec),
                 textAlign = TextAlign.End
             )
 
@@ -468,7 +468,6 @@ fun DayIndex(
                                 } catch (e: Exception) {
                                     date
                                 }
-                                Log.d("DayIndex", "CAIDEOGIVAY: $transactionId, Date: $transactionDate")
                                 if (transaction.type == "expense") {
                                     navController.navigate("editExpense/$transactionId?date=$transactionDate")
                                 } else {
@@ -583,6 +582,8 @@ fun DropdownRow(
         selectedOption = options[2].second // Lưu enum thay vì String
     } else if (initialValue == 3){
         selectedOption = options[3].second // Lưu enum thay vì String
+    } else {
+
     }
 
     Row(
@@ -630,7 +631,7 @@ fun DropdownRow(
             onDismissRequest = { showDialog = false },
             title = {
                 Text(
-                    text = "Chọn $label",
+                    text = "Chọn:",
                     fontFamily = montserrat,
                     fontWeight = FontWeight.Bold
                 )
@@ -692,6 +693,8 @@ fun <T : Enum<T>> DropdownRepeat(
         selectedOption = options[2].second // Lưu enum thay vì String
     } else if (initialValue == 3){
         selectedOption = options[3].second // Lưu enum thay vì String
+    } else {
+
     }
 
     var showDialog by remember { mutableStateOf(false) }
