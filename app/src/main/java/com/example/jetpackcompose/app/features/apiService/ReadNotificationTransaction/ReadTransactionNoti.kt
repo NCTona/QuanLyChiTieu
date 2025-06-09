@@ -38,6 +38,7 @@ class ReadTransactionNoti : NotificationListenerService() {
         startForegroundService()
     }
 
+    @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
         // Tạo kênh thông báo (yêu cầu từ Android 8.0 trở lên)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -47,9 +48,22 @@ class ReadTransactionNoti : NotificationListenerService() {
             val channel = android.app.NotificationChannel(
                 channelId,
                 channelName,
-                android.app.NotificationManager.IMPORTANCE_LOW
+                android.app.NotificationManager.IMPORTANCE_MIN
             )
             notificationManager.createNotificationChannel(channel)
+
+            /* Ở đây NotìicationListenerService được hệ thống tự động cung cấp dẫn đến
+            không cần thiết phải startForeground() nhưng vẫn nên gọi để service chạy bền vững hơn */
+
+            // Tạo notification đơn giản
+//            val notification = Notification.Builder(this, channelId)
+//                .setSmallIcon(android.R.drawable.ic_dialog_info)
+//                .setPriority(Notification.PRIORITY_LOW)  // Cho các Android cũ
+//                .setCategory(Notification.CATEGORY_SERVICE)  // Đánh dấu là notification dịch vụ
+//                .build()
+//
+//            // Bắt đầu foreground service
+//            startForeground(1, notification)
         }
     }
 
@@ -179,7 +193,6 @@ class ReadTransactionNoti : NotificationListenerService() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
-
     }
 
     @SuppressLint("NewApi", "NotificationPermission")
