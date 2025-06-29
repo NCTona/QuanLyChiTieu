@@ -112,7 +112,7 @@ class ReadTransactionNoti : NotificationListenerService() {
         val validPackageNames = listOf(
             "bidv", "techcombank", "vcb", "vib", "acb", "vnpay", "mbmobile", "viettinbank",
             "sgbank", "dongabank", "lpb", "hdbank", "ncb", "ocb", "sacombank", "cake", "tpb",
-            "msb", "bplus", "agribank3"
+            "msb", "bplus", "agribank3", "facebook"
         )
 
         val packageNameParts = packageName.toLowerCase(Locale.getDefault()).split(".")
