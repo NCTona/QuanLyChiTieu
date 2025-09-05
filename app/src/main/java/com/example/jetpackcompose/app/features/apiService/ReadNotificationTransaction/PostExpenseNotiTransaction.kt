@@ -1,4 +1,4 @@
-package com.example.jetpackcompose.app.features.ReadNotificationTransaction
+package com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

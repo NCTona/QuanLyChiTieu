@@ -1,5 +1,6 @@
 package com.example.jetpackcompose.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -697,6 +698,7 @@ fun YearPickerDialog(
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun PopupSetBudgetDialog(
     onDismiss: () -> Unit,

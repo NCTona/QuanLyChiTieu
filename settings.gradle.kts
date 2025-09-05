@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JetpackCompose"
+rootProject.name = "Quản lý chi tiêu"
 include(":app")
  
