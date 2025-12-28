@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
-import com.example.jetpackcompose.app.network.SendOtp
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.SendOtp
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException

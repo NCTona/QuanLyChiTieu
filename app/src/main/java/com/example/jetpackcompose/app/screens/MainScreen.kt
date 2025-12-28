@@ -14,8 +14,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.example.jetpackcompose.navigation.CustomBottomAppBar
 import kotlinx.coroutines.launch
 
@@ -24,6 +26,9 @@ fun MainScreen(navController: NavHostController) {
     val pagerState = rememberPagerState(
         pageCount = { 5 }
     )
+
+    val context = LocalContext.current
+
     val coroutineScope = rememberCoroutineScope()
 
     var selectedPage by rememberSaveable { mutableStateOf(0) } // Quản lý selectedPage tại MainScreen
@@ -37,6 +42,7 @@ fun MainScreen(navController: NavHostController) {
                 onPageSelected = { page ->
                     selectedPage = page // Cập nhật selectedPage khi bấm vào các mục trong BottomAppBar
                     coroutineScope.launch { pagerState.scrollToPage(page) }
+                    RefreshTokenScheduler.schedule(context)
                 })
         }
     ) { innerPadding ->

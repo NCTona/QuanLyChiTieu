@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.jetpackcompose.app.features.apiService.TransactionAPI.GetTransactionViewModel
-import com.example.jetpackcompose.app.network.TransactionResponse
+import com.example.jetpackcompose.app.features.apiService.TransactionResponse
 import com.example.jetpackcompose.components.CustomCalendar
 import com.example.jetpackcompose.components.DayIndex
 import com.example.jetpackcompose.components.MessagePopup

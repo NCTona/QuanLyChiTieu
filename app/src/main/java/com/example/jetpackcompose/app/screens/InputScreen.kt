@@ -1,7 +1,6 @@
 package com.example.jetpackcompose.app.screens
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -24,14 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.jetpackcompose.R
-import com.example.jetpackcompose.app.features.apiService.TransactionAPI.PutLimitTransactionViewModel
 import com.example.jetpackcompose.app.features.inputFeatures.ExpenseContent
 import com.example.jetpackcompose.app.features.inputFeatures.IncomeContent
 import com.example.jetpackcompose.components.CustomTabRow

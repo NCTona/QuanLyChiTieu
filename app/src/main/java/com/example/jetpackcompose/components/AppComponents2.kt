@@ -52,7 +52,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
@@ -100,7 +99,6 @@ fun DonutChartWithProgress(
 
 
     var selectedSegment by remember { mutableStateOf(0) } // Lưu trữ mảnh được chọn
-
     var progressWidth by remember { mutableStateOf(0f) }
     var progressRadius by remember { mutableStateOf(0f) }
 

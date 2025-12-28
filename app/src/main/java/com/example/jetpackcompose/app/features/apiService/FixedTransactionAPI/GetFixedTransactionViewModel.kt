@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -13,7 +15,17 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class GetFixedTransactionViewModel(private val context: Context) : ViewModel() {
 
-    private val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val sharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        "secure_user_prefs",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     private val gson = GsonBuilder()
         .setLenient()

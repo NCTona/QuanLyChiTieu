@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI.SendOtpViewModel
-import com.example.jetpackcompose.app.network.SendOtp
+import com.example.jetpackcompose.app.features.apiService.SendOtp
 import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.MyTextFieldComponent
 import com.example.jetpackcompose.components.montserrat

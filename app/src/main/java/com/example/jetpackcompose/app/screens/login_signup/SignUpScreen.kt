@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Surface
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignUpViewModel
-import com.example.jetpackcompose.app.network.RegistrationData
+import com.example.jetpackcompose.app.features.apiService.RegistrationData
 import com.example.jetpackcompose.components.CheckboxComponent
 import com.example.jetpackcompose.components.ClickableTextComponent
 import com.example.jetpackcompose.components.HeadingTextComponent

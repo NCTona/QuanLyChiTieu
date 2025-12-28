@@ -3,10 +3,10 @@ package com.example.jetpackcompose.app.features.apiService.LogAPI
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
-import com.example.jetpackcompose.app.network.RegistrationData
-import com.example.jetpackcompose.app.network.RegistrationResponse
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.RegistrationData
+import com.example.jetpackcompose.app.features.apiService.RegistrationResponse
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException

@@ -2,7 +2,8 @@
 agp = "8.7.2"
 comMaxkeppelerSheetsComposeDialogsXmodule_z2 = "<version>"
 gson = "2.10.1"
-kotlin = "1.9.0"
+kotlin = "2.1.20"
+composeCompiler = "1.5.15"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -16,6 +17,7 @@ navigationCompose = "2.8.3"
 uiTestAndroid = "1.7.5"
 runtimeLivedata = "1.7.5"
 animationAndroid = "1.9.0"
+workRuntimeKtx = "2.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,8 +41,9 @@ androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-andr
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-animation-android = { group = "androidx.compose.animation", name = "animation-android", version.ref = "animationAndroid" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

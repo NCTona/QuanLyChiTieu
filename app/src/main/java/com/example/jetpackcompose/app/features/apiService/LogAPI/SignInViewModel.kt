@@ -5,10 +5,13 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
-import com.example.jetpackcompose.app.network.LoginData
-import com.example.jetpackcompose.app.network.LoginResponse
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.LoginData
+import com.example.jetpackcompose.app.features.apiService.LoginResponse
+import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -19,45 +22,46 @@ import retrofit2.converter.gson.GsonConverterFactory
 class SignInViewModel(private val context: Context) : ViewModel() {
 
     private val gson = GsonBuilder()
-        .setLenient() // Cho phép đọc dữ liệu JSON không chính xác hoàn toàn
+        .setLenient()
         .create()
 
-    private val api = Retrofit.Builder()
-        .baseUrl(BaseURL.baseUrl) // Thay thế bằng base URL API của bạn
+    private val api: ApiService = Retrofit.Builder()
+        .baseUrl(BaseURL.baseUrl)
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(ApiService::class.java)
 
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        EncryptedSharedPreferences.create(
+            context,
+            "secure_user_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
 
     var loginStatus: String = ""
         private set
 
-    // Lưu token vào SharedPreferences
-    private fun saveToken(token: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("auth_token", token)
-        editor.apply()
+    // Hàm lưu cả access + refresh
+    private fun saveTokens(accessToken: String, refreshToken: String) {
+        sharedPreferences.edit()
+            .putString("is_logged_in", true.toString())
+            .putString("auth_token", accessToken)
+            .putString("refresh_token", refreshToken)
+            .apply()
     }
 
-    // Lấy token từ SharedPreferences
+    // Lấy access token (giữ nguyên)
     fun getToken(): String? {
         return sharedPreferences.getString("auth_token", null)
     }
 
-    // Xóa token khi người dùng đăng xuất
-    fun clearToken() {
-        val editor = sharedPreferences.edit()
-        editor.remove("auth_token")
-        editor.apply()
-    }
 
-    fun isTokenCleared(): Boolean {
-        return getToken() == null
-    }
-
-    // Hàm đăng nhập người dùng
     fun signInUser(
         data: LoginData,
         onSuccess: (String) -> Unit,
@@ -65,55 +69,63 @@ class SignInViewModel(private val context: Context) : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                val response = api.login(data) // Gọi API đăng nhập
+                val response = api.login(data)
+
                 if (response.isSuccessful) {
                     val responseBody = response.body()
-                    if (responseBody != null) {
-                        // Lấy token từ phản hồi
-                        val status = responseBody.status
-                        if (status == "success") {
-                            val token = responseBody.message
-                            if (token.isNotEmpty()) {
-                                saveToken(token) // Lưu token vào SharedPreferences
-                                loginStatus = "Login successful"
-                                onSuccess(loginStatus)
-                            } else {
-                                loginStatus = "Login failed: Empty token"
-                                onError(loginStatus)
-                            }
+
+                    if (responseBody == null) {
+                        loginStatus = "Login failed: Empty response from server"
+                        onError(loginStatus)
+                        return@launch
+                    }
+
+                    if (responseBody.status == "success") {
+                        val accessToken = responseBody.accessToken
+                        val refreshToken = responseBody.refreshToken
+
+                        if (!accessToken.isNullOrEmpty() && !refreshToken.isNullOrEmpty()) {
+                            saveTokens(accessToken, refreshToken)
+                            RefreshTokenScheduler.schedule(context)
+                            loginStatus = "Login successful"
+                            onSuccess(loginStatus)
                         } else {
-                            loginStatus = "Login failed: ${responseBody.message}"
+                            loginStatus = "Login failed: Invalid token"
                             onError(loginStatus)
                         }
                     } else {
-                        loginStatus = "Login failed: Empty response from server"
+                        loginStatus = "${responseBody.message}"
                         onError(loginStatus)
                     }
+
                 } else {
-                    // Xử lý errorBody
-                    val errorBodyString = response.errorBody()?.string() // Lấy nội dung của errorBody
+                    // Parse errorBody từ BE
+                    val errorBodyString = response.errorBody()?.string()
+
                     if (errorBodyString != null) {
-                        // Parse JSON từ errorBody
-                        val errorResponse = gson.fromJson(errorBodyString, LoginResponse::class.java)
-                        val errorMessage = errorResponse.message
-                        loginStatus = "Login failed: $errorMessage"
+                        val errorResponse =
+                            gson.fromJson(errorBodyString, LoginResponse::class.java)
+                        loginStatus = errorResponse.message ?: "Login failed"
                         onError(loginStatus)
                     } else {
-                        loginStatus = "Login failed: Unknown error"
+                        loginStatus = "Login failed: Unknown server error"
                         onError(loginStatus)
                     }
                 }
+
             } catch (e: JsonSyntaxException) {
-                loginStatus = "JSON syntax error: ${e.localizedMessage}"
-                Log.e("SignInViewModel", "JSON Syntax Error: ${e.localizedMessage}", e)
+                loginStatus = "JSON syntax error"
+                Log.e("SignInViewModel", "JSON Syntax Error", e)
                 onError(loginStatus)
+
             } catch (e: JsonParseException) {
-                loginStatus = "Error parsing JSON response: ${e.localizedMessage}"
-                Log.e("SignInViewModel", "JSON Parsing Error: ${e.localizedMessage}", e)
+                loginStatus = "JSON parse error"
+                Log.e("SignInViewModel", "JSON Parse Error", e)
                 onError(loginStatus)
+
             } catch (e: Exception) {
                 loginStatus = "General error: ${e.localizedMessage}"
-                Log.e("SignInViewModel", "General Error: ${e.localizedMessage}", e)
+                Log.e("SignInViewModel", "General Error", e)
                 onError(loginStatus)
             }
         }

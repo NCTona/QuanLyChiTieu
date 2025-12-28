@@ -7,7 +7,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModel
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModelFactory
-import com.example.jetpackcompose.components.MyButtonComponent
+import com.example.jetpackcompose.app.features.apiService.TokenStorage
 import com.example.jetpackcompose.components.montserrat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +115,7 @@ fun OtherScreen(navController: NavHostController) {
                             "Đăng xuất" to {
                                 // Gọi clearToken từ SignInViewModel khi người dùng đăng xuất
                                 Log.i("CheckToken", "${signInViewModel.getToken()}")
-                                signInViewModel.clearToken()
+                                TokenStorage(context).clear()
                                 Log.i("CheckToken", "${signInViewModel.getToken()}")
                                 navController.navigate("signup") {
                                     popUpTo(navController.graph.startDestinationId) { inclusive = true }

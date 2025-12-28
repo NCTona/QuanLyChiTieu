@@ -13,8 +13,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.jetpackcompose.app.AppQuanLyChiTieu
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.ReadTransactionNoti
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.TransactionStorage
+import com.example.jetpackcompose.app.features.apiService.TokenStorage
+import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
+import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
 
 
 class MainActivity : ComponentActivity() {
@@ -27,16 +28,14 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        RefreshTokenScheduler.schedule(this)
+        TokenStorage(this).clearAccessTokenExpired(this)
 
         // Kiểm tra và yêu cầu quyền Notification Listener
         checkAndRequestNotificationPermission(this)
 
         // Kiểm tra và yêu cầu bật AutoStart
         checkAndRequestAutoStart(this)
-
-        // Khởi động service
-        val serviceIntent = Intent(this, ReadTransactionNoti::class.java)
-        startService(serviceIntent)
 
         // Tạo một TransactionStorage trống
         val emptyTransactionStorage = TransactionStorage.empty()
@@ -154,6 +153,7 @@ class TransactionNotiActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        RefreshTokenScheduler.schedule(this)
 
         setContent {
             // Tích hợp giao diện Jetpack Compose tại đây

@@ -1,5 +1,6 @@
 package com.example.jetpackcompose.app.screens.login_signup.forgot_password
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI.ResetPasswordViewModel
-import com.example.jetpackcompose.app.network.ResetPassword
+import com.example.jetpackcompose.app.features.apiService.ResetPassword
 import com.example.jetpackcompose.components.MessagePopup
 import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.montserrat
@@ -55,6 +56,16 @@ fun SetPasswordContent(navController: NavHostController, email: String) {
 
     val resetPasswordViewModel: ResetPasswordViewModel =
         ResetPasswordViewModel(LocalContext.current)
+
+    val context = LocalContext.current
+
+    val sharedPreferences = remember {
+        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    }
+
+    val resetToken = remember {
+        sharedPreferences.getString("reset_token", null)
+    }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -255,31 +266,36 @@ fun SetPasswordContent(navController: NavHostController, email: String) {
                         successMessage = ""
                         showPopup = true
                     } else {
-                        val resetPasswordData = ResetPassword(
-                            email = email,
-                            newPassword = password,
-                            confirmPassword = confirmPassword
-                        )
+                        val resetPasswordData = resetToken?.let {
+                            ResetPassword(
+                                email = email,
+                                resetToken = it,
+                                newPassword = password,
+                                confirmPassword = confirmPassword
+                            )
+                        }
                         Log.d("ResetPassword", "ResetPasswordData: $resetPasswordData")
-                        resetPasswordViewModel.resetPassword(
-                            data = resetPasswordData,
-                            onSuccess = {
-                                successMessage = "Mật khẩu đã được đặt lại, vui lòng đăng nhập."
-                                errorMessage = ""
-                                showPopup = true
-                                navController.navigate("signin")
-                                {
-                                    popUpTo("signin") {
-                                        inclusive = true
+                        if (resetPasswordData != null) {
+                            resetPasswordViewModel.resetPassword(
+                                data = resetPasswordData,
+                                onSuccess = {
+                                    successMessage = "Mật khẩu đã được đặt lại, vui lòng đăng nhập."
+                                    errorMessage = ""
+                                    showPopup = true
+                                    navController.navigate("signin")
+                                    {
+                                        popUpTo("signin") {
+                                            inclusive = true
+                                        }
                                     }
+                                },
+                                onError = {
+                                    errorMessage = it
+                                    successMessage = ""
+                                    showPopup = true
                                 }
-                            },
-                            onError = {
-                                errorMessage = it
-                                successMessage = ""
-                                showPopup = true
-                            }
-                        )
+                            )
+                        }
 
                     }
                 }
