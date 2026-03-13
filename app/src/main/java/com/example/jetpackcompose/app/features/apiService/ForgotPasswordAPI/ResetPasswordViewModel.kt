@@ -3,9 +3,9 @@ package com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
-import com.example.jetpackcompose.app.network.ResetPassword
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.ResetPassword
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException

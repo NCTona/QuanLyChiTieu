@@ -54,11 +54,6 @@ import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.componentShapes
 import com.example.jetpackcompose.ui.theme.textColor
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 @Composable
 fun EditIncomeTransaction(

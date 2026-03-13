@@ -33,7 +33,7 @@ import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModel
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModelFactory
-import com.example.jetpackcompose.app.network.LoginData
+import com.example.jetpackcompose.app.features.apiService.LoginData
 import com.example.jetpackcompose.components.ClickableTextComponent
 import com.example.jetpackcompose.components.HeadingTextComponent
 import com.example.jetpackcompose.components.MessagePopup

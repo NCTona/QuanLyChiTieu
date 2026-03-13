@@ -1,11 +1,12 @@
 package com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpackcompose.app.network.ApiService
-import com.example.jetpackcompose.app.network.BaseURL
-import com.example.jetpackcompose.app.network.VerifyOtp
+import com.example.jetpackcompose.app.features.apiService.ApiService
+import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.VerifyOtp
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -24,6 +25,16 @@ class VerifyOtpViewModel(private val context: Context) : ViewModel() {
         .build()
         .create(ApiService::class.java)
 
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
+    // Lưu token vào SharedPreferences
+    private fun saveToken(token: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString("reset_token", token)
+        editor.apply()
+    }
+
     var otpStatus: String = ""
         private set
 
@@ -40,6 +51,7 @@ class VerifyOtpViewModel(private val context: Context) : ViewModel() {
                     val responseBody = response.body()
                     if (responseBody != null) {
                         otpStatus = "OTP verified successfully: ${responseBody.message}"
+                        saveToken(responseBody.resetToken)
                         onSuccess(otpStatus)
                     } else {
                         otpStatus = "Empty response from server"

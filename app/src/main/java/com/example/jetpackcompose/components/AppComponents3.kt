@@ -70,7 +70,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
-import com.example.jetpackcompose.app.network.TransactionResponse
+import com.example.jetpackcompose.app.features.apiService.TransactionResponse
 import com.example.jetpackcompose.app.screens.Category
 import com.example.jetpackcompose.ui.theme.componentShapes
 import com.example.jetpackcompose.ui.theme.errorColor

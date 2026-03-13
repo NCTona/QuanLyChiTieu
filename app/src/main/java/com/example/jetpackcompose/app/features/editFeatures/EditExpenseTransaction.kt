@@ -55,7 +55,6 @@ import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.componentShapes
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
-import java.util.Calendar
 
 @SuppressLint("DefaultLocale")
 @Composable

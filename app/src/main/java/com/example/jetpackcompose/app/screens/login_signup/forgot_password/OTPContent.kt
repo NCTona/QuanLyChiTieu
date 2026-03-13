@@ -53,8 +53,8 @@ import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI.SendOtpViewModel
 import com.example.jetpackcompose.app.features.apiService.ForgotPasswordAPI.VerifyOtpViewModel
-import com.example.jetpackcompose.app.network.SendOtp
-import com.example.jetpackcompose.app.network.VerifyOtp
+import com.example.jetpackcompose.app.features.apiService.SendOtp
+import com.example.jetpackcompose.app.features.apiService.VerifyOtp
 import com.example.jetpackcompose.components.MessagePopup
 import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.montserrat
@@ -69,8 +69,8 @@ fun OTPContent(navController: NavHostController, email: String) {
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    var otpValues by remember { mutableStateOf(List(4) { "" }) }
-    val focusRequesters = remember { List(4) { FocusRequester() } }
+    var otpValues by remember { mutableStateOf(List(6) { "" }) }
+    val focusRequesters = remember { List(6) { FocusRequester() } }
     var errorMessage by remember { mutableStateOf("") }
     var successMessage by remember { mutableStateOf("") }
     var showPopup by remember { mutableStateOf(false) }
@@ -139,12 +139,13 @@ fun OTPContent(navController: NavHostController, email: String) {
                 otpValues.forEachIndexed { index, value ->
                     TextField(
                         value = value,
+                        singleLine = true,
                         onValueChange = { newValue ->
                             if (newValue.length <= 1) {
                                 otpValues = otpValues.toMutableList().apply {
                                     this[index] = newValue
                                 }
-                                if (newValue.isNotEmpty() && index < 3) {
+                                if (newValue.isNotEmpty() && index < 5) {
                                     focusRequesters[index + 1].requestFocus()
                                 }
                             }
@@ -172,10 +173,10 @@ fun OTPContent(navController: NavHostController, email: String) {
                                     false
                                 }
                             }
-                            .width(75.dp)
-                            .height(75.dp)
-                            .padding(4.dp)
-                            .background(Color.White, RoundedCornerShape(8.dp))
+                            .width(55.dp)
+                            .height(55.dp)
+                            .padding(2.dp)
+//                            .background(Color.White, RoundedCornerShape(8.dp))
                             .border(
                                 2.dp,
                                 if (value.isNotEmpty()) primaryColor else Color.LightGray,
@@ -183,12 +184,11 @@ fun OTPContent(navController: NavHostController, email: String) {
                             ),
                         maxLines = 1,
                         textStyle = TextStyle(
-                            fontSize = 28.sp,
+                            fontSize = 18.sp,
                             fontFamily = montserrat,
                             fontWeight = FontWeight.Bold,
                             color = textColor,
                             textAlign = TextAlign.Center,
-                            lineHeight = 70.sp // Ensures text is vertically centered
                         ),
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = Color.Transparent,
@@ -218,8 +218,8 @@ fun OTPContent(navController: NavHostController, email: String) {
                 onClick = {
                     val otp = otpValues.joinToString("")
                     val verifyOtpData = VerifyOtp(email = email, otp = otp)
-                    if (otp.length != 4) {
-                        errorMessage = "Vui lòng nhập mã OTP gồm 4 số"
+                    if (otp.length != 6) {
+                        errorMessage = "Vui lòng nhập mã OTP gồm 6 số"
                         successMessage = ""
                         showPopup = true
                         return@MyButtonComponent
@@ -230,7 +230,7 @@ fun OTPContent(navController: NavHostController, email: String) {
                                 successMessage = "Xác thực OTP thành công"
                                 errorMessage = ""
                                 showPopup = true
-                                Log.d("OTP", "OTP verified successfully: $verifyOtpData")
+                                Log.d("OTP", "OTP verified successfully")
                                 navController.navigate("setPassword/$email") {
                                     popUpTo("setPassword") { inclusive = true }
                                 }
@@ -239,7 +239,7 @@ fun OTPContent(navController: NavHostController, email: String) {
                                 errorMessage = it
                                 successMessage = ""
                                 showPopup = true
-                                Log.d("OTP", "OTP verification failed: $verifyOtpData")
+                                Log.d("OTP", "OTP verification failed")
                             }
                         )
                     }

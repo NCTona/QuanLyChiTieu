@@ -12,6 +12,8 @@
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="false"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,7 +26,7 @@
 
         <!-- Service -->
         <service
-            android:name=".app.features.apiService.ReadNotificationTransaction.ReadTransactionNoti"
+            android:name=".app.features.readNotificationTransaction.ReadTransactionNoti"
             android:exported="true"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
             tools:ignore="ForegroundServicePermission">
@@ -34,7 +36,7 @@
         </service>
 
         <!-- BroadcastReceiver -->
-        <receiver android:name=".app.features.apiService.ReadNotificationTransaction.RestartServiceReceiver"
+        <receiver android:name=".app.features.readNotificationTransaction.RestartServiceReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -60,5 +62,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 </manifest>

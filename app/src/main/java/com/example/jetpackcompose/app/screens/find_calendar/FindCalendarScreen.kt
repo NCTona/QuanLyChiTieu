@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -53,8 +54,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.jetpackcompose.R
 import com.example.jetpackcompose.app.features.apiService.TransactionAPI.FindTransactionViewModel
-import com.example.jetpackcompose.app.network.FindTransactionResponse
-import com.example.jetpackcompose.app.network.TransactionResponse
+import com.example.jetpackcompose.app.features.apiService.FindTransactionResponse
+import com.example.jetpackcompose.app.features.apiService.TransactionResponse
 import com.example.jetpackcompose.components.DayIndex
 import com.example.jetpackcompose.components.DropdownRow
 import com.example.jetpackcompose.components.montserrat
@@ -222,23 +223,39 @@ fun FindCalendarScreen(navController: NavController) {
                                     else -> TextFieldValue() // Giá trị mặc định nếu selectedCategory không hợp lệ
                                 },
                                 onValueChange = { newValue ->
-                                    // Chỉ cho phép nhập số nếu chọn "Số tiền"
-                                    if (selectedCategory == "Số tiền" && newValue.text.all { it.isDigit() || it == '.' }) {
-                                        textAmount = newValue
-                                        viewModel.findTransactions(
-                                            categoryName = "",
-                                            note = "",
-                                            amount = newValue.text.toLongOrNull(),
-                                            onSuccess = {
-                                                transactions = it
-                                                Log.d("transactions", transactions.toString())
-                                            },
-                                            onError = {
-                                                errorMessage = it
-                                            }
-                                        )
-                                    } else if (selectedCategory != "Số tiền") {
-                                        // Thực hiện tìm kiếm đối với các trường hợp khác
+                                    if (selectedCategory == "Số tiền") {
+                                        // Bỏ dấu phẩy cũ để lấy chuỗi số gốc
+                                        val cleanString = newValue.text.replace(",", "")
+                                        if (cleanString.all { it.isDigit() }) {
+                                            // Định dạng lại theo nhóm 3 chữ số
+                                            val formatted = cleanString.reversed()
+                                                .chunked(3)
+                                                .joinToString(",")
+                                                .reversed()
+
+                                            // Cập nhật textAmount, con trỏ luôn ở cuối
+                                            textAmount = TextFieldValue(
+                                                text = formatted,
+                                                selection = TextRange(formatted.length)
+                                            )
+
+                                            // Parse giá trị thật không có dấu phẩy
+                                            val numericValue = cleanString.toLongOrNull()
+                                            viewModel.findTransactions(
+                                                categoryName = "",
+                                                note = "",
+                                                amount = numericValue,
+                                                onSuccess = {
+                                                    transactions = it
+                                                    Log.d("transactions", transactions.toString())
+                                                },
+                                                onError = {
+                                                    errorMessage = it
+                                                }
+                                            )
+                                        }
+                                    } else {
+                                        // Các trường hợp khác (ghi chú, danh mục)
                                         when (selectedCategory) {
                                             "Ghi chú" -> textNote = newValue
                                             "Danh mục" -> textCategoryName = newValue
@@ -246,7 +263,7 @@ fun FindCalendarScreen(navController: NavController) {
                                         viewModel.findTransactions(
                                             categoryName = if (selectedCategory == "Danh mục") newValue.text else "",
                                             note = if (selectedCategory == "Ghi chú") newValue.text else "",
-                                            amount = if (selectedCategory == "Số tiền") newValue.text.toLongOrNull() else null,
+                                            amount = if (selectedCategory == "Số tiền") newValue.text.replace(",", "").toLongOrNull() else null,
                                             onSuccess = {
                                                 transactions = it
                                                 Log.d("transactions", transactions.toString())

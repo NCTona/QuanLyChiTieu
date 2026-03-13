@@ -34,7 +34,6 @@ import com.example.jetpackcompose.components.MessagePopup
 import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.RowNumberField
 import com.example.jetpackcompose.components.RowTextField
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Date

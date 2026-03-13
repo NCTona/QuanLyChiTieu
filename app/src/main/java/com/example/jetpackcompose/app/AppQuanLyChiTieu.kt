@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -27,10 +26,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModel
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModelFactory
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.PostExpenseNotiTransaction
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.PostIncomeNotiTransaction
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.TransactionNotificationScreen
-import com.example.jetpackcompose.app.features.apiService.ReadNotificationTransaction.TransactionStorage
+import com.example.jetpackcompose.app.features.apiService.TokenStorage
+import com.example.jetpackcompose.app.features.readNotificationTransaction.PostExpenseNotiTransaction
+import com.example.jetpackcompose.app.features.readNotificationTransaction.PostIncomeNotiTransaction
+import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionNotificationScreen
+import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
 import com.example.jetpackcompose.app.features.editFeatures.EditExpenseTransaction
 import com.example.jetpackcompose.app.features.editFeatures.EditFixedExpenseTransaction
 import com.example.jetpackcompose.app.features.editFeatures.EditIncomeExpenseTransaction
@@ -50,6 +50,7 @@ import com.example.jetpackcompose.app.screens.login_signup.forgot_password.SetPa
 import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
+import kotlinx.coroutines.delay
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,6 +65,8 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
         transactionStorage.transactionsState.value // Lấy trạng thái danh sách giao dịch
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
+    var showLogOutDialog by rememberSaveable { mutableStateOf(false) }
+
     val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
     val isDialogShown by remember {
         mutableStateOf(
@@ -72,6 +75,17 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
                 false
             )
         )
+    }
+
+    var isLoggedIn = TokenStorage(context).isLoggedIn()
+    var isRefreshTokenExpired = TokenStorage(context).isRefreshTokenExpired(context)
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            isRefreshTokenExpired =
+                TokenStorage(context).isRefreshTokenExpired(context)
+            delay(30_000) // check mỗi 30s
+        }
     }
 
     LaunchedEffect(transactions, isDialogShown) {
@@ -90,7 +104,14 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
         }
     }
 
-    if (showDialog) {
+    LaunchedEffect (isRefreshTokenExpired) {
+        if (isRefreshTokenExpired) {
+            showLogOutDialog = true
+        }
+    }
+
+
+    if (showDialog && isLoggedIn) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = {
@@ -138,8 +159,47 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
         )
     }
 
+    if (showLogOutDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showLogOutDialog = false
+                navController.navigate("signin")
+            },
+            title = {
+                Text(
+                    "Phiên đăng nhập đã hết hạn",
+                    fontFamily = montserrat,
+                    color = Color(0xff222222),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Text(
+                    "Vui lòng đăng nhập lại.",
+                    fontFamily = montserrat,
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor,
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogOutDialog = false
+                    navController.navigate("signin")
+                }) {
+                    Text(
+                        "OK",
+                        fontFamily = montserrat,
+                        color = primaryColor
+                    )
+                }
+            }
+        )
+    }
+
     // Kiểm tra nếu Token đã được xác nhận hay không
-    if (signInViewModel.isTokenCleared()) {
+    if (!isLoggedIn) {
         NavHost(navController = navController, startDestination = "signup") {
             composable("signup") { SignUpScreen(navController) }
             composable("signin") { SignInScreen(navController) }
