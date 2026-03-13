@@ -11,7 +11,6 @@ import com.example.jetpackcompose.app.features.apiService.ApiService
 import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.example.jetpackcompose.app.features.apiService.LoginData
 import com.example.jetpackcompose.app.features.apiService.LoginResponse
-import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
@@ -88,7 +87,6 @@ class SignInViewModel(private val context: Context) : ViewModel() {
 
                         if (!accessToken.isNullOrEmpty() && !refreshToken.isNullOrEmpty()) {
                             saveTokens(accessToken, refreshToken)
-                            RefreshTokenScheduler.schedule(context)
                             loginStatus = "Login successful"
                             onSuccess(loginStatus)
                         } else {

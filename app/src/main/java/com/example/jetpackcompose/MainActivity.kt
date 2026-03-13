@@ -18,7 +18,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.jetpackcompose.app.AppQuanLyChiTieu
 import com.example.jetpackcompose.app.features.apiService.TokenStorage
-import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
 import com.example.jetpackcompose.security.SecurityGuard
 import java.security.MessageDigest
@@ -37,12 +36,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!SecurityGuard.isAppSecure(this)) {
-            failSecurely()
-            return
-        }
+//        if (!SecurityGuard.isAppSecure(this)) {
+//            failSecurely()
+//            return
+//        }
 
-        RefreshTokenScheduler.schedule(this)
         TokenStorage(this).clearAccessTokenExpired(this)
 
         // Kiểm tra và yêu cầu quyền Notification Listener
@@ -193,7 +191,6 @@ class TransactionNotiActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        RefreshTokenScheduler.schedule(this)
 
         setContent {
             // Tích hợp giao diện Jetpack Compose tại đây

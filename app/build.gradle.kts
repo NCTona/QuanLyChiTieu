@@ -112,6 +112,10 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.work.runtime.ktx)
 
+    // TensorFlow Lite - chạy model dự đoán chi tiêu
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.14.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

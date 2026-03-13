@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.example.jetpackcompose.navigation.CustomBottomAppBar
 import kotlinx.coroutines.launch
 
@@ -42,7 +41,6 @@ fun MainScreen(navController: NavHostController) {
                 onPageSelected = { page ->
                     selectedPage = page // Cập nhật selectedPage khi bấm vào các mục trong BottomAppBar
                     coroutineScope.launch { pagerState.scrollToPage(page) }
-                    RefreshTokenScheduler.schedule(context)
                 })
         }
     ) { innerPadding ->

@@ -4,43 +4,14 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import com.example.jetpackcompose.app.features.apiService.ApiService
-import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.app.features.apiService.RetrofitProvider
 import com.example.jetpackcompose.app.features.apiService.TransactionResponse
 import com.example.jetpackcompose.app.screens.DailyTransaction
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-
 
 class GetTransactionViewModel(private val context: Context) : ViewModel() {
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "secure_user_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    private val gson = GsonBuilder()
-        .setLenient()
-        .create()
-
-    private val api = Retrofit.Builder()
-        .baseUrl(BaseURL.baseUrl)
-        .client(UnsafeOkHttpClient.create())
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .build()
-        .create(ApiService::class.java)
+    private val api = RetrofitProvider.provideApiService(context)
 
     var transactionList: List<DailyTransaction> = emptyList()
         private set
@@ -50,12 +21,6 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
     var transactionStatus: String = ""
         private set
 
-    // Lấy token từ SharedPreferences
-    private fun getToken(): String? {
-        return sharedPreferences.getString("auth_token", null)
-    }
-
-    // Hàm lấy danh sách giao dịch
     fun getTransactions(
         month: Int,
         year: Int,
@@ -63,26 +28,14 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
         onSuccess2: (Map<String, List<TransactionResponse.TransactionDetail>>) -> Unit,
         onError: (String) -> Unit
     ) {
-        val token = getToken()
-
-        if (token.isNullOrEmpty()) {
-            transactionStatus = "Error: Token not found. Please log in again."
-            onError(transactionStatus)
-            return
-        }
-
         viewModelScope.launch {
             try {
-                Log.d("TransactionViewModel", "Token: $token")
-
-                val response = api.getTransactions("Bearer $token", month, year)
+                val response = api.getTransactions(month, year)
                 Log.d("TransactionViewModel", "Response Code: ${response.code()}")
-                Log.d("TransactionViewModel", "Response Error Body: ${response.errorBody()?.string()}")
 
                 if (response.isSuccessful) {
                     val transactionsResponse = response.body()
                     if (transactionsResponse != null) {
-                        // Lấy dailyTransactions từ response và chuyển đổi thành danh sách
                         val dailyTransactionList = transactionsResponse.dailyTransactions.map { (date, dailyTransaction) ->
                             DailyTransaction(
                                 date = date,
@@ -91,7 +44,6 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
                             )
                         }
 
-                        // Chuyển danh sách transactions thành Map nhóm theo ngày
                         val dateTransactionDetailList: Map<String, List<TransactionResponse.TransactionDetail>> = transactionsResponse.transactions
                             .groupBy { transaction -> transaction.transactionDate.joinToString("-") }
                             .mapValues { (_, transactions) ->
@@ -107,10 +59,8 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
                                 }
                             }
 
-                        // Log to check the map content
                         Log.d("TransactionViewModel", "TransactionDetails grouped by date: $dateTransactionDetailList")
 
-                        // Set the transactionList and status
                         transactionList = dailyTransactionList
                         dateTransactionList = dateTransactionDetailList
                         transactionStatus = "Transactions fetched successfully"
@@ -133,5 +83,3 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
         }
     }
 }
-
-

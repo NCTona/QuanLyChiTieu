@@ -4,42 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import com.example.jetpackcompose.app.features.apiService.ApiService
-import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.example.jetpackcompose.app.features.apiService.ReportExpenseResponse
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
-import com.google.gson.GsonBuilder
+import com.example.jetpackcompose.app.features.apiService.RetrofitProvider
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class GetReportExpenseViewModel(private val context: Context) : ViewModel() {
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "secure_user_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-
-    private val gson = GsonBuilder()
-        .setLenient()
-        .create()
-
-    private val api = Retrofit.Builder()
-        .baseUrl(BaseURL.baseUrl)
-        .client(UnsafeOkHttpClient.create())
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .build()
-        .create(ApiService::class.java)
+    private val api = RetrofitProvider.provideApiService(context)
 
     var reportData: ReportExpenseResponse? = null
         private set
@@ -47,39 +18,20 @@ class GetReportExpenseViewModel(private val context: Context) : ViewModel() {
     var reportStatus: String = ""
         private set
 
-    // Lấy token từ SharedPreferences
-    private fun getToken(): String? {
-        return sharedPreferences.getString("auth_token", null)
-    }
-
-    // Hàm lấy báo cáo
     fun getExpenseReport(
         month: Int,
         year: Int,
         onSuccess: (ReportExpenseResponse) -> Unit,
         onError: (String) -> Unit
     ) {
-        val token = getToken()
-
-        if (token.isNullOrEmpty()) {
-            reportStatus = "Error: Token not found. Please log in again."
-            onError(reportStatus)
-            return
-        }
-
         viewModelScope.launch {
             try {
-                Log.d("GetReportViewModel", "Token: $token")
-
-                val response = api.getReportExpense("Bearer $token", month, year)
+                val response = api.getReportExpense(month, year)
                 Log.d("GetReportViewModel", "Response Code: ${response.code()}")
-                Log.d("GetReportViewModel", "Response Code: ${response.body()}")
-                Log.d("GetReportViewModel", "Response Error Body: ${response.errorBody()?.string()}")
 
                 if (response.isSuccessful) {
                     val reportResponse = response.body()
                     if (reportResponse != null) {
-                        // Gán dữ liệu và gọi callback thành công
                         reportData = reportResponse
                         reportStatus = "Report fetched successfully"
                         onSuccess(reportResponse)

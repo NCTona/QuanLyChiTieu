@@ -48,6 +48,7 @@ fun OtherScreen(navController: NavHostController) {
         painterResource(id = R.drawable.preodic),
         painterResource(id = R.drawable.notibalance),
         painterResource(id = R.drawable.search),
+        painterResource(id = R.drawable.search), // Dự đoán chi tiêu AI
         painterResource(id = R.drawable.logout)
     )
 
@@ -113,7 +114,9 @@ fun OtherScreen(navController: NavHostController) {
                             "Tìm kiếm giao dịch" to {
                                 navController.navigate("findTransaction")
                             },
-
+                            "Dự đoán chi tiêu AI" to {
+                                navController.navigate("forecast")
+                            },
 
                             "Đăng xuất" to {
                                 // Gọi clearToken từ SignInViewModel khi người dùng đăng xuất

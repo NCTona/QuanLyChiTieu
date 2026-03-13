@@ -47,6 +47,11 @@ import com.example.jetpackcompose.app.screens.login_signup.SignUpScreen
 import com.example.jetpackcompose.app.screens.login_signup.forgot_password.ForgotPasswordScreen
 import com.example.jetpackcompose.app.screens.login_signup.forgot_password.OTPContent
 import com.example.jetpackcompose.app.screens.login_signup.forgot_password.SetPasswordContent
+import com.example.jetpackcompose.app.screens.ForecastScreen
+import com.example.jetpackcompose.app.screens.OnDeviceForecastScreen
+import com.example.jetpackcompose.app.screens.CategoryForecastScreen
+import com.example.jetpackcompose.app.screens.AnomalyScreen
+import com.example.jetpackcompose.app.screens.SpendingAlertScreen
 import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
@@ -230,6 +235,11 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
             composable("budget") { BudgetScreen(navController) }
             composable("findTransaction") { FindCalendarScreen(navController) }
             composable("transactionNotification") { TransactionNotificationScreen(navController) }
+            composable("forecast") { ForecastScreen(navController) }
+            composable("on_device_forecast") { OnDeviceForecastScreen(navController) }
+            composable("category_forecast") { CategoryForecastScreen(navController) }
+            composable("anomaly_detect") { AnomalyScreen(navController) }
+            composable("spending_alert") { SpendingAlertScreen(navController) }
 
             // Chỉnh sửa giao dịch (truyền transactionId)
             composable(
@@ -356,6 +366,11 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
             composable("budget") { BudgetScreen(navController) }
             composable("findTransaction") { FindCalendarScreen(navController) }
             composable("transactionNotification") { TransactionNotificationScreen(navController) }
+            composable("forecast") { ForecastScreen(navController) }
+            composable("on_device_forecast") { OnDeviceForecastScreen(navController) }
+            composable("category_forecast") { CategoryForecastScreen(navController) }
+            composable("anomaly_detect") { AnomalyScreen(navController) }
+            composable("spending_alert") { SpendingAlertScreen(navController) }
 
 
             // Chỉnh sửa giao dịch (truyền transactionId)

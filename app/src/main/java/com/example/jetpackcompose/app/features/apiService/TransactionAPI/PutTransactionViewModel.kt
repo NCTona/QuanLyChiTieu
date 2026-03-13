@@ -4,69 +4,28 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.example.jetpackcompose.app.screens.Transaction
-import com.example.jetpackcompose.app.features.apiService.ApiService
-import com.example.jetpackcompose.app.features.apiService.BaseURL
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
-import com.google.gson.GsonBuilder
+import com.example.jetpackcompose.app.features.apiService.RetrofitProvider
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class PutTransactionViewModel(private val context: Context) : ViewModel() {
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "secure_user_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    private val gson = GsonBuilder().setLenient().create()
-    private val api = Retrofit.Builder()
-        .baseUrl(BaseURL.baseUrl)
-        .client(UnsafeOkHttpClient.create())
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .build()
-        .create(ApiService::class.java)
+    private val api = RetrofitProvider.provideApiService(context)
 
     var transactionStatus: String = ""
         private set
 
-    // Lấy token từ SharedPreferences
-    private fun getToken(): String? {
-        return sharedPreferences.getString("auth_token", null)
-    }
-
-    // Hàm PUT để cập nhật giao dịch
     fun putTransaction(
         transactionId: Int,
         data: Transaction,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        val token = getToken()
-
-        if (token.isNullOrEmpty()) {
-            transactionStatus = "Lỗi: Không tìm thấy token. Vui lòng đăng nhập lại."
-            onError(transactionStatus)
-            return
-        }
-
         viewModelScope.launch {
             try {
-                Log.d("PutTransactionViewModel", "Token: $token")
                 Log.d("PutTransactionViewModel", "Transaction Data: $data")
 
-                // Gọi API PUT để cập nhật giao dịch
-                val response = api.putTransaction("Bearer $token", transactionId, data)
+                val response = api.putTransaction(transactionId, data)
                 Log.d("PutTransactionViewModel", "Response Code: ${response.code()}")
 
                 if (response.isSuccessful) {
@@ -91,4 +50,3 @@ class PutTransactionViewModel(private val context: Context) : ViewModel() {
         }
     }
 }
-

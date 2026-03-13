@@ -4,68 +4,23 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.example.jetpackcompose.app.features.apiService.ApiService
-import com.example.jetpackcompose.app.features.apiService.BaseURL
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
-import com.google.gson.GsonBuilder
+import com.example.jetpackcompose.app.features.apiService.RetrofitProvider
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class GetFixedTransactionViewModel(private val context: Context) : ViewModel() {
-
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "secure_user_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    private val gson = GsonBuilder()
-        .setLenient()
-        .create()
-
-    private val api = Retrofit.Builder()
-        .baseUrl(BaseURL.baseUrl)
-        .client(UnsafeOkHttpClient.create())
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .build()
-        .create(ApiService::class.java)
+    private val api = RetrofitProvider.provideApiService(context)
 
     var transactionStatus: String = ""
         private set
 
-    // Lấy token từ SharedPreferences
-    private fun getToken(): String? {
-        return sharedPreferences.getString("auth_token", null)
-    }
-
-    // Hàm get fixed expense
     fun getFixedTransactions(
         onSuccess: (List<FixedTransactionResponse>) -> Unit,
         onError: (String) -> Unit
     ) {
-        val token = getToken()
-
-        if (token.isNullOrEmpty()) {
-            transactionStatus = "Error: Token not found. Please log in again."
-            onError(transactionStatus)
-            return
-        }
-
         viewModelScope.launch {
             try {
-                Log.d("GetFixedTransactionViewModel", "Token: $token")
-
-                // Gửi yêu cầu API để lấy FixedExpense
-                val response = api.getFixedTransactions("Bearer $token")
+                val response = api.getFixedTransactions()
                 Log.d("GetFixedTransactionViewModel", "Response Code: ${response.code()}")
 
                 if (response.isSuccessful) {

@@ -1,10 +1,5 @@
 package com.example.jetpackcompose.app.features.apiService.FixedTransactionAPI
 
-//import kotlinx.serialization.Serializable
-
-//@Serializable
-
-
 data class FixedTransaction(
     val amount: Long,
     val category_id: Int,
@@ -20,7 +15,6 @@ enum class RepeatFrequency(val displayName: String) {
     monthly("monthly"),
     yearly("yearly");
 
-    // Hàm để lấy tên hiển thị của enum
     override fun toString(): String {
         return displayName
     }
@@ -50,8 +44,3 @@ data class FixedTransactionUpdate(
     val start_date: String,
     val end_date: String
 )
-
-
-
-
-

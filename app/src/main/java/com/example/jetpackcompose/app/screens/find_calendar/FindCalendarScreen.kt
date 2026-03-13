@@ -131,7 +131,8 @@ fun FindCalendarScreen(navController: NavController) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
                                         contentDescription = "Back",
-                                        tint = textColor,
+                                        tint = primaryColor,
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
 

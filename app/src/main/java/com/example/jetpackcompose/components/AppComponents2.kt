@@ -943,7 +943,7 @@ fun BudgetTextField(
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
-            .height(30.dp)
+            .height(32.dp)
             .fillMaxWidth()
             .background(Color(0xFFe7e7e7), componentShapes.small)
             .border(
