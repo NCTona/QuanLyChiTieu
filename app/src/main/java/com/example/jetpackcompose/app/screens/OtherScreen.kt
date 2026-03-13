@@ -27,6 +27,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.jetpackcompose.app.features.apiService.LogAPI.LogOutViewModel
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModel
 import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModelFactory
 import com.example.jetpackcompose.app.features.apiService.TokenStorage
@@ -39,6 +40,8 @@ fun OtherScreen(navController: NavHostController) {
     // Lấy SignInViewModel từ ViewModelProvider, sử dụng factory để cung cấp context
     val context = LocalContext.current
     val signInViewModel: SignInViewModel = viewModel(factory = SignInViewModelFactory(context))
+
+    val logOutViewModel: LogOutViewModel = LogOutViewModel(context)
 
     // Danh sách các biểu tượng tương ứng với từng mục
     val icons = listOf(
@@ -115,8 +118,15 @@ fun OtherScreen(navController: NavHostController) {
                             "Đăng xuất" to {
                                 // Gọi clearToken từ SignInViewModel khi người dùng đăng xuất
                                 Log.i("CheckToken", "${signInViewModel.getToken()}")
-                                TokenStorage(context).clear()
-                                Log.i("CheckToken", "${signInViewModel.getToken()}")
+                                logOutViewModel.logOutUser(
+                                    onSuccess = {
+                                        Log.i("CheckToken", "${signInViewModel.getToken()}")
+                                    },
+                                    onError = {
+
+                                    }
+
+                                )
                                 navController.navigate("signup") {
                                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                     launchSingleTop = true // Đảm bảo không tạo nhiều bản sao của cùng một màn hình

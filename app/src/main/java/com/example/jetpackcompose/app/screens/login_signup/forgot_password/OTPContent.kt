@@ -24,6 +24,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,12 +61,16 @@ import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
+import kotlinx.coroutines.delay
 
 @Composable
 fun OTPContent(navController: NavHostController, email: String) {
 
     val sendOtpViewModel: SendOtpViewModel = SendOtpViewModel(LocalContext.current)
     val verifyOTP: VerifyOtpViewModel = VerifyOtpViewModel(LocalContext.current)
+
+    var timeLeft by remember { mutableStateOf(60) }
+    var canResend by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -81,6 +86,15 @@ fun OTPContent(navController: NavHostController, email: String) {
         showPopup = showPopup,
         onDismiss = { showPopup = false }
     )
+
+    LaunchedEffect(Unit) {
+        while (timeLeft > 0) {
+            delay(1000L)
+            timeLeft--
+        }
+        canResend = true
+    }
+
 
     Surface(
         modifier = Modifier
@@ -236,7 +250,7 @@ fun OTPContent(navController: NavHostController, email: String) {
                                 }
                             },
                             onError = {
-                                errorMessage = it
+                                errorMessage = "Xác thực OTP thất bại"
                                 successMessage = ""
                                 showPopup = true
                                 Log.d("OTP", "OTP verification failed")
@@ -258,33 +272,46 @@ fun OTPContent(navController: NavHostController, email: String) {
                     fontFamily = montserrat,
                     color = Color.Gray,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center
+                    fontWeight = FontWeight.Medium
                 )
-                Text(
-                    text = "Gửi lại",
-                    fontFamily = montserrat,
-                    color = primaryColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.clickable {
-                        val sendOtp = SendOtp(email = email)
-                        sendOtpViewModel.sendOtp(
-                            data = sendOtp,
-                            onSuccess = {
-                                successMessage = "Gửi OTP thành công"
-                                errorMessage = ""
-                            },
-                            onError = {
-                                errorMessage = "Email không tồn tại"
-                                successMessage = ""
-                            }
-                        )
 
-                    }
-                )
+                if (canResend) {
+                    Text(
+                        text = "Gửi lại",
+                        fontFamily = montserrat,
+                        color = primaryColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable {
+                            val sendOtp = SendOtp(email = email)
+                            sendOtpViewModel.sendOtp(
+                                data = sendOtp,
+                                onSuccess = {
+                                    successMessage = "Gửi OTP thành công"
+                                    errorMessage = ""
+
+                                    // reset countdown
+                                    timeLeft = 60
+                                    canResend = false
+                                },
+                                onError = {
+                                    errorMessage = "Email không tồn tại"
+                                    successMessage = ""
+                                }
+                            )
+                        }
+                    )
+                } else {
+                    Text(
+                        text = "Gửi lại (${timeLeft}s)",
+                        fontFamily = montserrat,
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
+
 
             Spacer(modifier = Modifier.height(20.dp))
 

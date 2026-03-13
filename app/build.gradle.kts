@@ -30,15 +30,26 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:\\Users\\NCTona\\release_keystore.jks")
+            storePassword = "123456789"
+            keyAlias = "release_key_alias"
+            keyPassword = "123456789"
         }
     }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
+
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -73,6 +84,10 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
 
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("com.google.crypto.tink:tink-android:1.11.0")
+
+    implementation("com.google.errorprone:error_prone_annotations:2.28.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")

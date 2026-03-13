@@ -120,7 +120,7 @@ fun SignInScreen(navController: NavHostController) {
                             data = loginData,
                             onSuccess = {
                                 errorMessage = ""
-                                successMessage = it
+                                successMessage = "Đăng nhập thành công."
                                 showPopup = true
                                 navController.navigate("mainscreen")
                             },

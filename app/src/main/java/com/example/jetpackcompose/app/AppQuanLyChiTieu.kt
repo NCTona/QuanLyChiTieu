@@ -163,6 +163,7 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
         AlertDialog(
             onDismissRequest = {
                 showLogOutDialog = false
+                TokenStorage(context).clear()
                 navController.navigate("signin")
             },
             title = {
@@ -186,6 +187,7 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
             confirmButton = {
                 TextButton(onClick = {
                     showLogOutDialog = false
+                    TokenStorage(context).clear()
                     navController.navigate("signin")
                 }) {
                     Text(

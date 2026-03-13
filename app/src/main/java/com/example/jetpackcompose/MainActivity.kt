@@ -6,16 +6,24 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Debug
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.jetpackcompose.app.AppQuanLyChiTieu
 import com.example.jetpackcompose.app.features.apiService.TokenStorage
 import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
+import com.example.jetpackcompose.security.SecurityGuard
+import java.security.MessageDigest
+import java.util.logging.Handler
+import kotlin.system.exitProcess
 
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +36,12 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!SecurityGuard.isAppSecure(this)) {
+            failSecurely()
+            return
+        }
+
         RefreshTokenScheduler.schedule(this)
         TokenStorage(this).clearAccessTokenExpired(this)
 
@@ -44,6 +58,19 @@ class MainActivity : ComponentActivity() {
             AppQuanLyChiTieu(emptyTransactionStorage)
         }
     }
+
+    private fun failSecurely() {
+        Toast.makeText(
+            this,
+            "Ứng dụng đã bị can thiệp. Vui lòng cài đặt lại từ nguồn chính thức.",
+            Toast.LENGTH_LONG
+        ).show()
+
+        android.os.Handler(Looper.getMainLooper()).postDelayed({
+            finishAffinity()
+        }, 1500)
+    }
+
 
     private fun checkAndRequestAutoStart(context: Context) {
         val sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -118,18 +145,31 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkAndRequestNotificationPermission(context: Context) {
-        val isNotificationEnabled = Settings.Secure.getString(
-            context.contentResolver,
-            "enabled_notification_listeners"
-        )?.contains(context.packageName) == true
+    fun isNotificationListenerEnabled(context: Context): Boolean {
+        val enabledListeners =
+            Settings.Secure.getString(
+                context.contentResolver,
+                "enabled_notification_listeners"
+            ) ?: return false
 
-        if (!isNotificationEnabled) {
+        val myService = ComponentName(
+            context,
+            com.example.jetpackcompose.app.features.readNotificationTransaction.ReadTransactionNoti::class.java
+        ).flattenToString()
+
+        return enabledListeners.split(":").any { it == myService }
+    }
+
+    private fun checkAndRequestNotificationPermission(context: Context) {
+        val isEnabled = isNotificationListenerEnabled(context)
+
+        if (!isEnabled) {
             showNotificationPermissionDialog(context)
         } else {
             Log.d("PermissionCheck", "Quyền Notification Listener đã được cấp.")
         }
     }
+
 
     private fun showNotificationPermissionDialog(context: Context) {
         AlertDialog.Builder(context).apply {

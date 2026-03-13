@@ -12,6 +12,7 @@ import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.example.jetpackcompose.app.features.apiService.LoginData
 import com.example.jetpackcompose.app.features.apiService.LoginResponse
 import com.example.jetpackcompose.app.features.apiService.RefreshAccessTokenAPI.RefreshTokenScheduler
+import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -27,6 +28,7 @@ class SignInViewModel(private val context: Context) : ViewModel() {
 
     private val api: ApiService = Retrofit.Builder()
         .baseUrl(BaseURL.baseUrl)
+        .client(UnsafeOkHttpClient.create())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(ApiService::class.java)

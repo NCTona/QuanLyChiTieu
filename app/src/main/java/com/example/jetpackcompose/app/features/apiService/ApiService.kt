@@ -156,6 +156,10 @@ interface ApiService {
     @POST("/api/users/login")
     suspend fun login(@Body LoginData: LoginData): Response<LoginResponse>
 
+    /// API cho đăng xuất
+    @POST("/api/users/logout")
+    suspend fun logout(@Header("Authorization") token: String): Response<ApiResponse>
+
     /// Refresh token
     @POST("/api/users/refresh-token")
     suspend fun refreshToken(@Body refreshToken: RefreshToken): Response<LoginResponse>

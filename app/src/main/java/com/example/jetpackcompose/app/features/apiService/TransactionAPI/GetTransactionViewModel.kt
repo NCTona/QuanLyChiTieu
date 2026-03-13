@@ -10,6 +10,7 @@ import com.example.jetpackcompose.app.features.apiService.ApiService
 import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.example.jetpackcompose.app.features.apiService.TransactionResponse
 import com.example.jetpackcompose.app.screens.DailyTransaction
+import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -36,6 +37,7 @@ class GetTransactionViewModel(private val context: Context) : ViewModel() {
 
     private val api = Retrofit.Builder()
         .baseUrl(BaseURL.baseUrl)
+        .client(UnsafeOkHttpClient.create())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(ApiService::class.java)

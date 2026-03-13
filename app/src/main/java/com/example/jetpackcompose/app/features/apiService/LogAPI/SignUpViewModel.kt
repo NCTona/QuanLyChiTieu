@@ -7,6 +7,7 @@ import com.example.jetpackcompose.app.features.apiService.ApiService
 import com.example.jetpackcompose.app.features.apiService.BaseURL
 import com.example.jetpackcompose.app.features.apiService.RegistrationData
 import com.example.jetpackcompose.app.features.apiService.RegistrationResponse
+import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
@@ -21,6 +22,7 @@ class SignUpViewModel : ViewModel() {
 
     private val api = Retrofit.Builder()
         .baseUrl(BaseURL.baseUrl)
+        .client(UnsafeOkHttpClient.create())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(ApiService::class.java)

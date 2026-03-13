@@ -2,7 +2,7 @@
 <network-security-config>
 
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">expense-tracker.com</domain>
+        <domain includeSubdomains="false">>ngrok-free.app</domain>
 
         <trust-anchors>
             <certificates src="@raw/server_cert" />

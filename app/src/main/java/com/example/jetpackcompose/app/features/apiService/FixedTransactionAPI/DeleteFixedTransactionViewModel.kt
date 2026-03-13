@@ -8,6 +8,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.jetpackcompose.app.features.apiService.ApiService
 import com.example.jetpackcompose.app.features.apiService.BaseURL
+import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -28,6 +29,7 @@ class DeleteFixedTransactionViewModel(private val context: Context) : ViewModel(
     private val gson = GsonBuilder().setLenient().create()
     private val api = Retrofit.Builder()
         .baseUrl(BaseURL.baseUrl)
+        .client(UnsafeOkHttpClient.create())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(ApiService::class.java)
