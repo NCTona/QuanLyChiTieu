@@ -56,6 +56,7 @@ class ReadTransactionNoti : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         // Lấy thông tin thông báo
         val packageName = sbn.packageName
+        val postTime = sbn.postTime
         val notificationTitle = sbn.notification.extras.getString("android.title") ?: "Unknown"
         val notificationText = sbn.notification.extras.getString("android.text") ?: "Unknown"
         Log.d("NotificationService", "Thông báo mới được nhận:")
@@ -63,23 +64,32 @@ class ReadTransactionNoti : NotificationListenerService() {
         Log.d("NotificationService", "Title: $notificationTitle")
         Log.d("NotificationService", "Text: $notificationText")
 
+        // Sử dụng SharedPreferences để lưu thời gian thông báo cuối cùng
+        val sharedPreferences = this.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        val lastNotificationTime = sharedPreferences.getLong("last_notification_time", 0L)
+
         // Kiểm tra xem thông báo có chứa thông tin về biến động số dư không
         val transactionData = getTransactionData(packageName, notificationText)
 
         transactionData?.let {
 
-            // Thêm giao dịch vào danh sách
-            transactionList.add(it)
+            if (postTime == lastNotificationTime) {
+                return
+            } else {
+                // Thêm giao dịch vào danh sách
+                transactionList.add(it)
 
-            // Lưu danh sách giao dịch vào bộ nhớ trong
-            transactionStorage.saveTransactions(transactionList)
+                // Lưu danh sách giao dịch vào bộ nhớ trong
+                transactionStorage.saveTransactions(transactionList)
 
-            val sharedPreferences = this.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-            sharedPreferences.edit().putBoolean("is_dialog_shown", false).apply()
+                sharedPreferences.edit().putBoolean("is_dialog_shown", false).apply()
 
-            showReceivedNotification( if (it.type == "expense") "Expense" else "Income", it.amount.toString() + "VND")
+                sharedPreferences.edit().putLong("last_notification_time", postTime).apply()
 
-            Log.d("NotificationService", "Danh sách giao dịch đã được lưu: $transactionList")
+                showReceivedNotification( if (it.type == "expense") "Expense" else "Income", it.amount.toString() + "VND")
+
+                Log.d("NotificationService", "Danh sách giao dịch đã được lưu: $transactionList")
+            }
         }
     }
 
@@ -88,7 +98,7 @@ class ReadTransactionNoti : NotificationListenerService() {
         val validPackageNames = listOf(
             "bidv", "techcombank", "vcb", "vib", "acb", "vnpay", "mbmobile", "viettinbank",
             "sgbank", "dongabank", "lpb", "hdbank", "ncb", "ocb", "sacombank", "cake", "tpb",
-            "msb", "bplus", "facebook", "agribank3"
+            "msb", "bplus", "agribank3"
         )
 
         val packageNameParts = packageName.toLowerCase(Locale.getDefault()).split(".")
@@ -134,6 +144,42 @@ class ReadTransactionNoti : NotificationListenerService() {
 
         // Trả về null nếu không hợp lệ
         return null
+    }
+
+    @SuppressLint("NewApi", "NotificationPermission")
+    private fun showAlertNotification(title: String, text: String) {
+        val channelId = "alert_notification_channel"
+        val channelName = "Alert Notifications"
+
+        // Tạo Intent để mở TransactionNotiActivity
+        val intent = Intent(this, TransactionNotiActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+            val channel = android.app.NotificationChannel(
+                channelId, channelName, android.app.NotificationManager.IMPORTANCE_LOW
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notification = Notification.Builder(this, channelId)
+            .setContentTitle("Cảnh báo chi tiêu")
+            .setContentText("$title: $text")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+
     }
 
     @SuppressLint("NewApi", "NotificationPermission")
