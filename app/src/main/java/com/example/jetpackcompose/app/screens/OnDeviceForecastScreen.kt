@@ -36,7 +36,7 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
         val calendar = Calendar.getInstance()
         val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
         val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-        maxDays - currentDay
+        maxDays - currentDay + 1
     }
 
     Scaffold(

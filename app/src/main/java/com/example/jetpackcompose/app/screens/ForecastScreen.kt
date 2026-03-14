@@ -157,100 +157,37 @@ fun ForecastScreen(navController: NavHostController) {
                 // ===== Dashboard Content =====
                 viewModel.summary?.let { summary ->
 
-                    // ───── Section 1: Dự đoán tuần (LSTM) ─────
-                    summary.weekly_forecast?.let { weekly ->
-                        item {
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1565C0)),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(20.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        "Dự đoán chi tiêu ${weekly.remaining_days} ngày còn lại (Tháng này)",
-                                        fontFamily = montserrat,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 13.sp,
-                                        color = Color.White.copy(alpha = 0.8f)
-                                    )
-                                    Text(
-                                        formatCurrency(weekly.predicted_spending),
-                                        fontFamily = montserrat,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 28.sp,
-                                        color = Color.White
-                                    )
-                                    
-                                    if (weekly.is_over_budget) {
-                                        Card(
-                                            shape = RoundedCornerShape(8.dp),
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFC62828)),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    weekly.warning_message,
-                                                    fontFamily = montserrat,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    fontSize = 12.sp,
-                                                    color = Color.White
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        Text(
-                                            "${weekly.warning_message}",
-                                            fontFamily = montserrat,
-                                            fontSize = 12.sp,
-                                            color = Color.White.copy(alpha = 0.9f)
-                                        )
-                                    }
-
-                                    Text(
-                                        "Dựa trên AI Server (LSTM)",
-                                        fontFamily = montserrat,
-                                        fontSize = 10.sp,
-                                        color = Color.White.copy(alpha = 0.5f)
-                                    )
-                                }
-                            }
-                        }
-                    }
                     
-                    // ───── Section 1.5: On-device forecast (TFLite) ─────
+                    // ───── Section 1: Dự đoán chi tiêu (On-device TFLite) ─────
                     item {
                         Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1565C0)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { navController.navigate("on_device_forecast") }
                         ) {
                             Row(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier.padding(20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        "Dự đoán Cá nhân (TFLite)",
+                                        "Dự báo xu hướng cá nhân",
                                         fontFamily = montserrat,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = Color(0xFF1565C0)
+                                        fontSize = 18.sp,
+                                        color = Color.White
                                     )
                                     Text(
-                                        "So sánh với mô hình chạy offline trên thiết bị",
+                                        "Chạy mô hình AI TFLite trực tiếp trên điện thoại để bảo mật và chính xác hơn",
                                         fontFamily = montserrat,
                                         fontSize = 12.sp,
-                                        color = Color(0xFF424242)
+                                        color = Color.White.copy(alpha = 0.8f)
                                     )
                                 }
-                                Text("→", fontSize = 18.sp, color = Color(0xFF1565C0))
+                                Text("→", fontSize = 24.sp, color = Color.White)
                             }
                         }
                     }
@@ -407,7 +344,7 @@ fun ForecastScreen(navController: NavHostController) {
                                     color = Color(0xFF2E7D32)
                                 )
                                 Text(
-                                    "• LSTM: Dự đoán chi tiêu cho những ngày còn lại trong tháng theo thói quen chi tiêu\n" +
+                                    "• TFLite (On-device): Dự đoán chi tiêu tuần tới dựa trên thói quen cá nhân của bạn\n" +
                                             "• LightGBM: Dự đoán chi tiêu tháng này theo từng danh mục\n" +
                                             "• Isolation Forest: Phát hiện giao dịch bất thường",
                                     fontFamily = montserrat,

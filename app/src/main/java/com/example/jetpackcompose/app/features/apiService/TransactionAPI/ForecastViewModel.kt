@@ -67,77 +67,38 @@ class ForecastViewModel(private val context: Context) : ViewModel() {
             return
         }
 
-        statusMessage = "Đang lấy dữ liệu chi tiêu 2 tháng gần nhất..."
+        statusMessage = "Đang đồng bộ dữ liệu input 4 tuần chuẩn từ Server..."
         isLoading = true
 
-        val calendar = java.util.Calendar.getInstance()
-        val currentMonth = calendar.get(java.util.Calendar.MONTH) + 1
-        val currentYear = calendar.get(java.util.Calendar.YEAR)
+        val apiService = com.example.jetpackcompose.app.features.apiService.RetrofitProvider.provideApiService(context)
 
-        // Tính tháng trước
-        calendar.add(java.util.Calendar.MONTH, -1)
-        val prevMonth = calendar.get(java.util.Calendar.MONTH) + 1
-        val prevYear = calendar.get(java.util.Calendar.YEAR)
-
-        val getTransViewModel = GetTransactionViewModel(context)
-        val allDailyTransactions = mutableListOf<com.example.jetpackcompose.app.screens.DailyTransaction>()
-
-        // Lấy tháng hiện tại
-        getTransViewModel.getTransactions(
-            month = currentMonth,
-            year = currentYear,
-            onSuccess1 = { currentMonthList ->
-                allDailyTransactions.addAll(currentMonthList)
-                
-                // Sau đó lấy thêm tháng trước
-                getTransViewModel.getTransactions(
-                    month = prevMonth,
-                    year = prevYear,
-                    onSuccess1 = { prevMonthList ->
-                        allDailyTransactions.addAll(prevMonthList)
-                        processFinalData(allDailyTransactions)
-                    },
-                    onSuccess2 = {},
-                    onError = { processFinalData(allDailyTransactions) } // Vẫn xử lý nếu tháng trước lỗi
-                )
-            },
-            onSuccess2 = { _ -> },
-            onError = { error ->
-                statusMessage = "Loi lay data: $error"
+        viewModelScope.launch {
+            try {
+                val response = apiService.getAISummary()
+                if (response.isSuccessful && response.body() != null) {
+                    val summary = response.body()
+                    val inputWeeks = summary?.weekly_forecast?.input_weeks
+                    
+                    if (inputWeeks != null && inputWeeks.size == 4) {
+                        Log.d("ForecastViewModel", "Fetched input_weeks from Server: $inputWeeks")
+                        processFinalDataFromDetails(inputWeeks)
+                    } else {
+                        statusMessage = "Dữ liệu tuần không hợp lệ từ Server"
+                        isLoading = false
+                    }
+                } else {
+                    statusMessage = "Lỗi lấy data từ Server: ${response.code()}"
+                    isLoading = false
+                }
+            } catch (e: Exception) {
+                statusMessage = "Không thể kết nối Server: ${e.message}"
                 isLoading = false
+                Log.e("ForecastViewModel", "Error fetching AI summary", e)
             }
-        )
+        }
     }
 
-    private fun processFinalData(dailyList: List<com.example.jetpackcompose.app.screens.DailyTransaction>) {
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-        
-        // Tạo map tra cứu nhanh: "yyyy-M-d" -> amount
-        val dailyMap = dailyList.associate { it.date to it.amountExpense.toDouble() }
-
-        // Mảng chứa 28 ngày gần nhất (từ cũ đến mới)
-        val last28DaysAmounts = DoubleArray(28)
-        val calendar = java.util.Calendar.getInstance()
-        
-        // Lùi 27 ngày để bắt đầu từ ngày cũ nhất trong chuỗi 28 ngày
-        calendar.add(java.util.Calendar.DAY_OF_YEAR, -27)
-
-        for (i in 0 until 28) {
-            val dateStr = sdf.format(calendar.time)
-            last28DaysAmounts[i] = dailyMap[dateStr] ?: 0.0
-            calendar.add(java.util.Calendar.DAY_OF_YEAR, 1) // Tiến 1 ngày
-        }
-
-        // Chia 28 ngày thành 4 tuần (mỗi tuần 7 ngày)
-        val weeklyExpenses = mutableListOf<Double>()
-        for (w in 0 until 4) {
-            var weekSum = 0.0
-            for (d in 0 until 7) {
-                weekSum += last28DaysAmounts[w * 7 + d]
-            }
-            weeklyExpenses.add(weekSum)
-        }
-
+    private fun processFinalDataFromDetails(weeklyExpenses: List<Double>) {
         val final4Weeks = weeklyExpenses
         Log.d("ForecastViewModel", "final4Weeks (Calendar based): $final4Weeks")
 

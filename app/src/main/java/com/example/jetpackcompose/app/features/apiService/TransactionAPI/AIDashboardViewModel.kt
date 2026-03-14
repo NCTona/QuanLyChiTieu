@@ -12,8 +12,8 @@ import com.example.jetpackcompose.app.features.apiService.RetrofitProvider
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel cho AI Dashboard — gọi 1 API duy nhất lấy toàn bộ insights từ 3 model:
- * - LSTM: dự đoán chi tiêu tuần tới
+ * ViewModel cho AI Dashboard — gọi 1 API duy nhất lấy toàn bộ insights:
+ * - Weekly Analysis: cung cấp dữ liệu cho TFLite (Android)
  * - LightGBM: dự đoán theo danh mục
  * - Isolation Forest: phát hiện bất thường
  * - Pattern: cảnh báo ngày chi cao

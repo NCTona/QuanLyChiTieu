@@ -333,9 +333,10 @@ data class SpendingAlertResponse(
     val suggestion: String
 )
 
-// ===== Data class cho AI Summary (tổng hợp 3 model) =====
+// ===== Data class cho AI Summary (Tổng hợp insights) =====
 
 data class AISummaryResponse(
+    // Dữ liệu đầu vào cho TFLite (Android)
     val weekly_forecast: WeeklyForecastData?,
     val category_forecasts: List<CategoryForecastResponse>,
     val anomaly_count: Int,
