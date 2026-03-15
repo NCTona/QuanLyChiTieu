@@ -1,7 +1,9 @@
-package com.example.jetpackcompose.app.features.readNotificationTransaction
+package com.example.jetpackcompose.presentation.transaction.edit
 
 import androidx.hilt.navigation.compose.hiltViewModel
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,13 +16,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
+import androidx.compose.material.TextButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,45 +42,44 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.jetpackcompose.R
-import com.example.jetpackcompose.presentation.transaction.PostTransactionViewModel
+import com.example.jetpackcompose.presentation.transaction.DeleteTransactionViewModel
+import com.example.jetpackcompose.presentation.transaction.GetTransactionViewModel
+import com.example.jetpackcompose.presentation.transaction.PutTransactionViewModel
 import com.example.jetpackcompose.presentation.common.Category
 import com.example.jetpackcompose.data.remote.dto.Transaction
 import com.example.jetpackcompose.components.CategoriesGrid
 import com.example.jetpackcompose.components.DatePickerButton
 import com.example.jetpackcompose.components.DrawBottomLine
 import com.example.jetpackcompose.components.MessagePopup
-import com.example.jetpackcompose.components.MyButtonComponent
 import com.example.jetpackcompose.components.NoteTextField
 import com.example.jetpackcompose.components.NumberTextField
 import com.example.jetpackcompose.components.montserrat
+import com.example.jetpackcompose.ui.theme.componentShapes
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
 
+@SuppressLint("DefaultLocale")
 @Composable
-fun PostExpenseNotiTransaction(
+fun EditExpenseTransaction(
     navController: NavHostController,
-    amount: Long,
-    selectedDate: String,
-    index: Int
-) {
-    val postViewModel: PostTransactionViewModel = hiltViewModel<PostTransactionViewModel>()
-
-    val context = LocalContext.current
-
-    // Tạo đối tượng TransactionStorage
-    val transactionStorage = TransactionStorage(context)
-
+    transactionId: Int,
+    transactionDate: String
+    ) {
+    val getViewModel: GetTransactionViewModel = hiltViewModel<GetTransactionViewModel>()
+    val putViewModel: PutTransactionViewModel = hiltViewModel<PutTransactionViewModel>()
+    val delViewModel: DeleteTransactionViewModel = hiltViewModel<DeleteTransactionViewModel>()
     // Trạng thái nhập liệu
     var textNote by remember { mutableStateOf(TextFieldValue()) }
-    var amountValue by remember { mutableStateOf(TextFieldValue(amount.toString())) }
-    var selectedDateState by remember { mutableStateOf(selectedDate) }
+    var amountValue by remember { mutableStateOf(TextFieldValue()) }
+    var selectedDate by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
 
-    // Thông báo lỗi và thành công
     var errorMessage by remember { mutableStateOf("") }
     var successMessage by remember { mutableStateOf("") }
 
+    // Trạng thái hiển thị Popup
     var showPopup by remember { mutableStateOf(false) }
+
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Danh sách các Category
@@ -84,59 +88,109 @@ fun PostExpenseNotiTransaction(
             1,
             "Chi phí nhà ở",
             { painterResource(R.drawable.outline_home_work_24) },
-            Color(0xFFfb791d),
+            Color(0xFFB40300),
             1.00f
         ),
         Category(
             2,
             "Ăn uống",
             { painterResource(R.drawable.outline_ramen_dining_24) },
-            Color(0xFF37c166),
+            Color(0xFF911294),
             1.00f
         ),
         Category(
             3,
             "Mua sắm quần áo",
             { painterResource(R.drawable.clothes) },
-            Color(0xFF283eaa),
+            Color(0xFF0C326E),
             1.00f
         ),
         Category(
             4,
             "Đi lại",
             { painterResource(R.drawable.outline_train_24) },
-            Color(0xFFa06749),
+            Color(0xFF126AB6),
             1.00f
         ),
         Category(
             5,
             "Chăm sóc sắc đẹp",
             { painterResource(R.drawable.outline_cosmetic) },
-            Color(0xFFf95aa9),
+            Color(0xFF0D96DA),
             1.00f
         ),
         Category(
             6,
             "Giao lưu",
             { painterResource(R.drawable.entertainment) },
-            Color(0xFF6a1b9a),
+            Color(0xFF4DB218),
             1.00f
         ),
         Category(
             7,
             "Y tế",
             { painterResource(R.drawable.outline_health_and_safety_24) },
-            Color(0xFFfc3d39),
+            Color(0xFFD5CC00),
             1.00f
         ),
         Category(
             8,
             "Học tập",
             { painterResource(R.drawable.outline_education) },
-            Color(0xFFfc7c1f),
+            Color(0xFFEE9305),
             1.00f
         )
     )
+
+    val dateParts = transactionDate.split("-")
+    val year = dateParts[0].toInt()
+    val month = dateParts[1].toInt()
+    // Tải danh sách giao dịch và tìm giao dịch cần chỉnh sửa
+    LaunchedEffect(transactionId) {
+        errorMessage = ""
+        successMessage = "Đang tải giao dịch..."
+        showPopup = true
+        getViewModel.getTransactions(
+            month = month,
+            year = year,
+            onSuccess1 = { _ ->
+                // Sau khi lấy tất cả giao dịch, tìm giao dịch có ID tương ứng
+                val transaction = getViewModel.dateTransactionList.values.flatten()
+                    .find { it.transaction_id == transactionId }
+
+                if (transaction != null) {
+                    // Cập nhật dữ liệu ban đầu vào các trường nhập liệu
+                    textNote = transaction.note?.let { TextFieldValue(it) } ?: TextFieldValue("")
+
+                    // Cập nhật amount
+                    amountValue = TextFieldValue(transaction.amount.toString())
+
+                    // Cập nhật ngày và loại bỏ phần thông tin " (Th 7)"
+                    val year = transaction.transactionDate[0]
+                    val month = transaction.transactionDate[1]
+                    val day = transaction.transactionDate[2]
+
+                    // Dùng String.format để định dạng tháng và ngày
+                    val formattedMonth = String.format("%02d", month)
+                    val formattedDay = String.format("%02d", day)
+
+                    selectedDate = "$year-$formattedMonth-$formattedDay"
+                    selectedDate = selectedDate.split(" ")[0]
+                    selectedCategory = categories.find { it.name == transaction.categoryName }
+
+                    showPopup = false
+                } else {
+                    errorMessage = "Không tìm thấy giao dịch!"
+                    showPopup = true
+                }
+            },
+            onSuccess2 = { _ -> },
+            onError = { error ->
+                errorMessage = error
+                showPopup = true
+            }
+        )
+    }
 
     // Giao diện người dùng
     Column(
@@ -145,13 +199,10 @@ fun PostExpenseNotiTransaction(
             .background(Color.White)
     ) {
         // Thanh tiêu đề với nút Quay lại và Xóa
-        Box(
-            modifier = Modifier
-                .background(Color(0xfff1f1f1))
-                .fillMaxWidth()
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier
+                    .background(Color(0xfff1f1f1))
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(8.dp),
@@ -167,9 +218,9 @@ fun PostExpenseNotiTransaction(
                     )
                 }
 
-                // Tiêu đề "Nhập khoản chi"
+                // Tiêu đề "Chỉnh sửa"
                 Text(
-                    text = "Nhập khoản chi",
+                    text = "Chỉnh sửa",
                     fontSize = 16.sp,
                     fontFamily = montserrat,
                     fontWeight = FontWeight.Bold,
@@ -178,12 +229,12 @@ fun PostExpenseNotiTransaction(
                     textAlign = TextAlign.Center
                 )
 
-                // Nút Xoá
+                // Nút Xoá (Chưa thực hiện logic)
                 Text(
                     text = "Xoá",
                     fontSize = 16.sp,
-                    color = primaryColor,
                     fontFamily = montserrat,
+                    color = primaryColor,
                     modifier = Modifier.clickable {
                         showDeleteDialog = true
                     }
@@ -192,13 +243,6 @@ fun PostExpenseNotiTransaction(
         }
 
         Divider(color = Color.LightGray, thickness = 1.dp)
-
-        MessagePopup(
-            successMessage = successMessage,
-            errorMessage = errorMessage,
-            showPopup = showPopup,
-            onDismiss = { showPopup = false }
-        )
 
         // Các trường nhập liệu
         Column(
@@ -215,16 +259,20 @@ fun PostExpenseNotiTransaction(
                     fontFamily = montserrat
                 )
                 DatePickerButton(
-                    initialDate = selectedDateState,
                     onDateSelected = { date ->
-                        val validDate = date.split(" ")[0]
-                        selectedDateState = validDate
+                        // Lấy phần ngày hợp lệ bằng cách tách chuỗi
+                        val validDate =
+                            date.split(" ")[0] // Tách theo khoảng trắng và lấy phần ngày "yyyy-MM-dd"
+
+                        selectedDate = validDate
                     },
+                    initialDate = transactionDate,
                 )
             }
 
-            DrawBottomLine(16.dp)
+            // Kiểm tra selectedDate có hợp lệ không trước khi parse
 
+            DrawBottomLine(16.dp)
             // Ghi chú
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -274,94 +322,119 @@ fun PostExpenseNotiTransaction(
 
             Spacer(Modifier.height(32.dp))
 
-            // Nút Nhập giao dịch
+            // Nút Sửa giao dịch
             Row(
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
-                MyButtonComponent(
-                    value = "Nhập khoản chi",
+                Button(
                     onClick = {
                         errorMessage = ""
                         successMessage = "Đang gửi dữ liệu..."
                         showPopup = true
                         val amount = amountValue.text.toLongOrNull() ?: 0L
-                        val transaction = Transaction(
-                            transaction_date = selectedDateState,
-                            note = textNote.text,
+                        val updatedTransaction = Transaction(
+                            category_id = selectedCategory?.id ?: 1,
                             amount = amount,
-                            category_id = selectedCategory?.id ?: 0
+                            transaction_date = selectedDate,
+                            note = textNote.text
                         )
+                        Log.d("EditExpenseTransaction", "Updated Transaction: $updatedTransaction")
 
-                        // Gửi dữ liệu giao dịch
-                        postViewModel.postTransaction(
-                            transaction,
+                        // Sửa dữ liệu giao dịch
+                        putViewModel.putTransaction(
+                            transactionId = transactionId,
+                            data = updatedTransaction,
                             onSuccess = {
-                                errorMessage = ""
-                                successMessage = "Nhập khoản chi thành công!"
+                                successMessage = "Chỉnh sửa thành công!"
                                 showPopup = true
-                                transactionStorage.deleteTransactionByIndex(index)
                                 navController.popBackStack()
                             },
-                            onError = {
-                                successMessage = ""
-                                errorMessage = "Có lỗi xảy ra vui lòng thử lại!"
+                            onError = { error ->
+                                errorMessage = error
                                 showPopup = true
                             }
                         )
-
-                        amountValue = TextFieldValue("")
-                        textNote = TextFieldValue("")
-                        selectedCategory = null
                     },
-                    isLoading = false
-                )
+                    modifier = Modifier.width(248.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF35E17))
+                ) {
+                    Text("Sửa khoản chi", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
-    }
 
-    // Dialog xác nhận xóa
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    "Xác nhận xóa",
-                    fontFamily = montserrat,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = { Text(
-                "Bạn có chắc chắn muốn xóa giao dịch mà không thêm không?",
-                fontFamily = montserrat,
-                fontWeight = FontWeight.SemiBold,
-            ) },
-            confirmButton = {
-                TextButton(onClick = {
-                    transactionStorage.deleteTransactionByIndex(index)
-                    showDeleteDialog = false
-                    navController.popBackStack() // Trở về màn hình trước
-                }) {
-                    Text(
-                        "OK",
-                        fontFamily = montserrat,
-                        color = Color.Red
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(
-                        "Bỏ qua",
-                        color = Color.Gray,
-                        fontFamily = montserrat
-                    )
-                }
-            }
+        MessagePopup(
+            showPopup = showPopup,
+            successMessage = successMessage,
+            errorMessage = errorMessage,
+            onDismiss = { showPopup = false }
         )
+
+        // Popup thông báo
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                shape = componentShapes.medium,
+                text = {
+                    Text(
+                        "Bạn có chắc chắn muốn xóa không?",
+                        fontFamily = montserrat,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                },
+                buttons = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .height(48.dp)
+                            .width(150.dp), // Giới hạn chiều ngang tối đa của AlertDialog
+                        horizontalArrangement = Arrangement.SpaceBetween // Căn chỉnh 2 nút về 2 phía
+                    ) {
+                        // Nút Bỏ qua - nằm bên trái
+                        TextButton(onClick = { showDeleteDialog = false }) {
+                            Text(
+                                "Bỏ qua",
+                                color = Color(0xff3a84fc),
+                                fontFamily = montserrat,
+                                textAlign = TextAlign.Start
+                            )
+                        }
+
+                        // Nút Xoá - nằm bên phải
+                        TextButton(onClick = {
+                            // Gọi API xóa giao dịch
+                            delViewModel.deleteTransaction(
+                                transactionId = transactionId,
+                                onSuccess = {
+                                    successMessage = "Xóa giao dịch thành công!"
+                                    showPopup = true
+                                    showDeleteDialog = false
+                                    navController.popBackStack() // Trở lại màn hình Calendar
+                                },
+                                onError = { error ->
+                                    errorMessage = error
+                                    showPopup = true
+                                    showDeleteDialog = false
+                                }
+                            )
+                        }) {
+                            Text(
+                                "Xoá",
+                                color = primaryColor,
+                                fontFamily = montserrat,
+                            )
+                        }
+                    }
+                }
+            )
+        }
     }
 }
+
+
+
 

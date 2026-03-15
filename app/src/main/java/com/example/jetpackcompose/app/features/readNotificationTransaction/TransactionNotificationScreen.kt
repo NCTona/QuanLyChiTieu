@@ -1,6 +1,7 @@
 package com.example.jetpackcompose.app.features.readNotificationTransaction
 
 // TransactionNotificationScreen.kt
+import com.example.jetpackcompose.data.remote.dto.Transaction
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

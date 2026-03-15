@@ -1,5 +1,6 @@
 package com.example.jetpackcompose.app
 
+import com.example.jetpackcompose.data.remote.dto.Transaction
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -18,40 +19,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModel
-import com.example.jetpackcompose.app.features.apiService.LogAPI.SignInViewModelFactory
-import com.example.jetpackcompose.app.features.apiService.TokenStorage
+import com.example.jetpackcompose.data.local.TokenStorage
 import com.example.jetpackcompose.app.features.readNotificationTransaction.PostExpenseNotiTransaction
 import com.example.jetpackcompose.app.features.readNotificationTransaction.PostIncomeNotiTransaction
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionNotificationScreen
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
-import com.example.jetpackcompose.app.features.editFeatures.EditExpenseTransaction
-import com.example.jetpackcompose.app.features.editFeatures.EditFixedExpenseTransaction
-import com.example.jetpackcompose.app.features.editFeatures.EditIncomeExpenseTransaction
-import com.example.jetpackcompose.app.features.editFeatures.EditIncomeTransaction
-import com.example.jetpackcompose.app.screens.BudgetScreen
-import com.example.jetpackcompose.app.screens.CalendarScreen
-import com.example.jetpackcompose.app.screens.MainScreen
-import com.example.jetpackcompose.app.screens.OtherScreen
-import com.example.jetpackcompose.app.screens.anual_sceens.AnualScreen
-import com.example.jetpackcompose.app.screens.anual_sceens.InputFixedTab
-import com.example.jetpackcompose.app.screens.find_calendar.FindCalendarScreen
-import com.example.jetpackcompose.app.screens.login_signup.SignInScreen
-import com.example.jetpackcompose.app.screens.login_signup.SignUpScreen
-import com.example.jetpackcompose.app.screens.login_signup.forgot_password.ForgotPasswordScreen
-import com.example.jetpackcompose.app.screens.login_signup.forgot_password.OTPContent
-import com.example.jetpackcompose.app.screens.login_signup.forgot_password.SetPasswordContent
-import com.example.jetpackcompose.app.screens.ForecastScreen
-import com.example.jetpackcompose.app.screens.OnDeviceForecastScreen
-import com.example.jetpackcompose.app.screens.CategoryForecastScreen
-import com.example.jetpackcompose.app.screens.AnomalyScreen
-import com.example.jetpackcompose.app.screens.SpendingAlertScreen
+import com.example.jetpackcompose.presentation.transaction.edit.EditExpenseTransaction
+import com.example.jetpackcompose.presentation.transaction.edit.EditFixedExpenseTransaction
+import com.example.jetpackcompose.presentation.transaction.edit.EditIncomeExpenseTransaction
+import com.example.jetpackcompose.presentation.transaction.edit.EditIncomeTransaction
+import com.example.jetpackcompose.presentation.budget.BudgetScreen
+import com.example.jetpackcompose.presentation.transaction.list.CalendarScreen
+import com.example.jetpackcompose.presentation.common.MainScreen
+import com.example.jetpackcompose.presentation.settings.OtherScreen
+import com.example.jetpackcompose.presentation.transaction.fixed.AnualScreen
+import com.example.jetpackcompose.presentation.transaction.fixed.InputFixedTab
+import com.example.jetpackcompose.presentation.transaction.list.FindCalendarScreen
+import com.example.jetpackcompose.presentation.auth.SignInScreen
+import com.example.jetpackcompose.presentation.auth.SignInViewModel
+import com.example.jetpackcompose.presentation.auth.SignUpScreen
+import com.example.jetpackcompose.presentation.auth.ForgotPasswordScreen
+import com.example.jetpackcompose.presentation.auth.OTPContent
+import com.example.jetpackcompose.presentation.auth.SetPasswordContent
+import com.example.jetpackcompose.presentation.forecast.ForecastScreen
+import com.example.jetpackcompose.presentation.forecast.OnDeviceForecastScreen
+import com.example.jetpackcompose.presentation.forecast.CategoryForecastScreen
+import com.example.jetpackcompose.presentation.forecast.AnomalyScreen
+import com.example.jetpackcompose.presentation.forecast.SpendingAlertScreen
 import com.example.jetpackcompose.components.montserrat
 import com.example.jetpackcompose.ui.theme.primaryColor
 import com.example.jetpackcompose.ui.theme.textColor
@@ -63,11 +63,9 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
 
     val navController = rememberNavController()
     val context = LocalContext.current
-    val signInViewModel: SignInViewModel = viewModel(
-        factory = SignInViewModelFactory(context)
-    )
+    val signInViewModel: SignInViewModel = hiltViewModel()
     val transactions =
-        transactionStorage.transactionsState.value // Lấy trạng thái danh sách giao dịch
+        transactionStorage.transactionsState.value
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
     var showLogOutDialog by rememberSaveable { mutableStateOf(false) }
@@ -81,7 +79,6 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
             )
         )
     }
-
     var isLoggedIn = TokenStorage(context).isLoggedIn()
     var isRefreshTokenExpired = TokenStorage(context).isRefreshTokenExpired(context)
 

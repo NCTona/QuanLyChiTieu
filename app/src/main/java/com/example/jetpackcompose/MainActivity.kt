@@ -17,14 +17,16 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.jetpackcompose.app.AppQuanLyChiTieu
-import com.example.jetpackcompose.app.features.apiService.TokenStorage
+import com.example.jetpackcompose.data.local.TokenStorage
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
 import com.example.jetpackcompose.security.SecurityGuard
+import dagger.hilt.android.AndroidEntryPoint
 import java.security.MessageDigest
 import java.util.logging.Handler
 import kotlin.system.exitProcess
 
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object {
@@ -187,6 +189,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@AndroidEntryPoint
 class TransactionNotiActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {

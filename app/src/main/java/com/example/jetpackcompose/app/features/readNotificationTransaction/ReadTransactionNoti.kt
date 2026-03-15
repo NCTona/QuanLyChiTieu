@@ -1,5 +1,6 @@
 package com.example.jetpackcompose.app.features.readNotificationTransaction
 
+import com.example.jetpackcompose.data.remote.dto.Transaction
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
@@ -73,7 +74,7 @@ class ReadTransactionNoti : NotificationListenerService() {
         val notificationTitle = sbn.notification.extras.getString("android.title") ?: "Unknown"
         val notificationText = sbn.notification.extras.getString("android.text") ?: "Unknown"
         Log.d("NotificationService", "Thông báo mới được nhận:")
-        Log.d("NotificationService", "Package Name: $packageName")
+        Log.d("NotificationService", "package com.example.jetpackcompose.app.features.readNotificationTransaction $packageName")
         Log.d("NotificationService", "Title: $notificationTitle")
         Log.d("NotificationService", "Text: $notificationText")
 
@@ -115,7 +116,7 @@ class ReadTransactionNoti : NotificationListenerService() {
         )
 
         val packageNameParts = packageName.lowercase(Locale.getDefault()).split(".")
-        Log.d("NotificationService", "Package Name Parts: $packageNameParts")
+        Log.d("NotificationService", "package com.example.jetpackcompose.app.features.readNotificationTransaction Parts: $packageNameParts")
 
         // Kiểm tra xem packageName có thuộc danh sách hợp lệ không
         if (validPackageNames.any { it in packageNameParts }) {
