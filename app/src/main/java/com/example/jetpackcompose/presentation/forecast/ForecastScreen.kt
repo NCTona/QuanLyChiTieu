@@ -36,7 +36,6 @@ fun ForecastScreen(navController: NavHostController) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<AIDashboardViewModel>()
 
-    // Auto-load khi vào màn hình
     LaunchedEffect(Unit) {
         viewModel.loadSummary()
     }
@@ -61,7 +60,7 @@ fun ForecastScreen(navController: NavHostController) {
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
-                                        contentDescription = "Quay lại",
+                                        contentDescription = "Quay lai",
                                         tint = primaryColor,
                                         modifier = Modifier.size(24.dp)
                                     )
@@ -159,8 +158,7 @@ fun ForecastScreen(navController: NavHostController) {
                 // ===== Dashboard Content =====
                 viewModel.summary?.let { summary ->
 
-                    
-                    // ───── Section 1: Dự đoán chi tiêu (On-device TFLite) ─────
+                    // Section 1: Du doan chi tieu (On-device TFLite)
                     item {
                         Card(
                             shape = RoundedCornerShape(16.dp),
@@ -176,25 +174,24 @@ fun ForecastScreen(navController: NavHostController) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        "Dự báo xu hướng cá nhân",
+                                        "Dự báo xu hướng ăn uống",
                                         fontFamily = montserrat,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
                                         color = Color.White
                                     )
                                     Text(
-                                        "Chạy mô hình AI TFLite trực tiếp trên điện thoại để bảo mật và chính xác hơn",
+                                        "Dự đoán chi tiêu ăn uống tuần tới bằng AI TFLite trực tiếp trên điện thoại",
                                         fontFamily = montserrat,
                                         fontSize = 12.sp,
                                         color = Color.White.copy(alpha = 0.8f)
                                     )
                                 }
-                                Text("→", fontSize = 24.sp, color = Color.White)
                             }
                         }
                     }
 
-                    // ───── Section 2: Anomaly Badge (IForest) ─────
+                    // Section 2: Anomaly Badge (IForest)
                     if (summary.anomaly_count > 0) {
                         item {
                             Card(
@@ -210,7 +207,6 @@ fun ForecastScreen(navController: NavHostController) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    // Badge
                                     Badge(containerColor = Color(0xFFD32F2F)) {
                                         Text(
                                             "${summary.anomaly_count}",
@@ -228,7 +224,6 @@ fun ForecastScreen(navController: NavHostController) {
                                             fontSize = 13.sp,
                                             color = Color(0xFFC62828)
                                         )
-                                        // Hiển thị mô tả ngắn gọn anomaly đầu tiên
                                         summary.top_anomalies.firstOrNull()?.let { firstAnomaly ->
                                             Text(
                                                 firstAnomaly.message,
@@ -239,13 +234,12 @@ fun ForecastScreen(navController: NavHostController) {
                                             )
                                         }
                                     }
-                                    Text("→", fontSize = 18.sp, color = Color(0xFFC62828))
                                 }
                             }
                         }
                     }
 
-                    // ───── Section 3: Category Forecasts (LightGBM) ─────
+                    // Section 3: Category Forecasts (LightGBM)
                     if (summary.category_forecasts.isNotEmpty()) {
                         item {
                             Text(
@@ -258,7 +252,6 @@ fun ForecastScreen(navController: NavHostController) {
                             )
                         }
 
-                        // Hiển thị top 3 category, click để xem chi tiết
                         val topCategories = summary.category_forecasts.take(3)
                         items(topCategories) { forecast ->
                             DashboardCategoryCard(forecast = forecast)
@@ -271,7 +264,7 @@ fun ForecastScreen(navController: NavHostController) {
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(
-                                        "Xem tất cả ${summary.category_forecasts.size} danh mục →",
+                                        "Xem tất cả ${summary.category_forecasts.size} danh mục ->",
                                         fontFamily = montserrat,
                                         fontSize = 13.sp,
                                         color = primaryColor
@@ -281,7 +274,7 @@ fun ForecastScreen(navController: NavHostController) {
                         }
                     }
 
-                    // ───── Section 4: Spending Alerts (Pattern) ─────
+                    // Section 4: Spending Alerts (Pattern)
                     if (summary.upcoming_alerts.isNotEmpty()) {
                         item {
                             Text(
@@ -305,10 +298,10 @@ fun ForecastScreen(navController: NavHostController) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
-                                    Text("Ngay", fontSize = 14.sp, fontFamily = montserrat, fontWeight = FontWeight.Bold, color = Color(0xFFFF8F00))
+                                    Text("Ngày", fontSize = 14.sp, fontFamily = montserrat, fontWeight = FontWeight.Bold, color = Color(0xFFFF8F00))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            "Ngày ${alert.day_of_month} — ${alert.category_name}",
+                                            "Ngày ${alert.day_of_month} - ${alert.category_name}",
                                             fontFamily = montserrat,
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 13.sp,
@@ -327,7 +320,7 @@ fun ForecastScreen(navController: NavHostController) {
                         }
                     }
 
-                    // ───── Section 5: Info Card ─────
+                    // Section 5: Info Card
                     item {
                         Card(
                             shape = RoundedCornerShape(12.dp),
@@ -346,9 +339,9 @@ fun ForecastScreen(navController: NavHostController) {
                                     color = Color(0xFF2E7D32)
                                 )
                                 Text(
-                                    "• TFLite (On-device): Dự đoán chi tiêu tuần tới dựa trên thói quen cá nhân của bạn\n" +
-                                            "• LightGBM: Dự đoán chi tiêu tháng này theo từng danh mục\n" +
-                                            "• Isolation Forest: Phát hiện giao dịch bất thường",
+                                    "- TFLite (On-device): Dự đoán chi tiêu ăn uống tuần tới dựa trên thói quen cá nhân\n" +
+                                            "- LightGBM: Dự đoán chi tiêu tháng này theo từng danh mục\n" +
+                                            "- Isolation Forest: Phát hiện giao dịch bất thường",
                                     fontFamily = montserrat,
                                     fontSize = 11.sp,
                                     color = Color(0xFF555555),
@@ -365,15 +358,18 @@ fun ForecastScreen(navController: NavHostController) {
 
 @Composable
 private fun DashboardCategoryCard(forecast: CategoryForecastResponse) {
-    val trendText = when (forecast.trend) {
-        "increasing" -> "+${forecast.change_percent}%"
-        "decreasing" -> "${forecast.change_percent}%"
-        else -> "Ổn định"
+    val statusColor = when (forecast.status) {
+        "over_budget" -> Color(0xFFE53935)
+        "warning" -> Color(0xFFFF8F00)
+        "safe" -> Color(0xFF43A047)
+        else -> Color(0xFF757575)
     }
-    val trendColor = when (forecast.trend) {
-        "increasing" -> Color(0xFFE53935)
-        "decreasing" -> Color(0xFF43A047)
-        else -> Color(0xFF1565C0)
+    val statusText = when (forecast.status) {
+        "over_budget" -> "Vượt NS"
+        "warning" -> "Cảnh báo"
+        "safe" -> "An toàn"
+        "no_budget" -> "Chưa đặt"
+        else -> forecast.status
     }
 
     val categoryName = when (forecast.category_id) {
@@ -408,7 +404,7 @@ private fun DashboardCategoryCard(forecast: CategoryForecastResponse) {
                     color = Color(0xFF333333)
                 )
                 Text(
-                    "Tháng trước: ${formatCurrency(forecast.current_spending)}",
+                    "Đã chi: ${formatCurrency(forecast.current_spent)}",
                     fontFamily = montserrat,
                     fontSize = 11.sp,
                     color = Color(0xFF888888)
@@ -420,14 +416,14 @@ private fun DashboardCategoryCard(forecast: CategoryForecastResponse) {
                     fontFamily = montserrat,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = Color(0xFF1B5E20)
+                    color = statusColor
                 )
                 Text(
-                    trendText,
+                    statusText,
                     fontFamily = montserrat,
                     fontWeight = FontWeight.Medium,
                     fontSize = 11.sp,
-                    color = trendColor
+                    color = statusColor
                 )
             }
         }

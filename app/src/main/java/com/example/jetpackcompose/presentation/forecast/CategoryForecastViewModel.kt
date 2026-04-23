@@ -37,18 +37,17 @@ class CategoryForecastViewModel @Inject constructor(private val apiService: ApiS
 
     /**
      * Lay du doan chi tieu tat ca danh muc tu server.
-     * @param normalized true = ràng buộc budget, false = dự đoán tự do (mặc định).
      */
-    fun loadForecasts(normalized: Boolean = false) {
+    fun loadForecasts() {
         isLoading = true
         errorMessage = null
 
         viewModelScope.launch {
             try {
-                val response = apiService.getCategoryForecasts(normalized)
+                val response = apiService.getCategoryForecasts()
                 if (response.isSuccessful && response.body() != null) {
                     forecasts = response.body()!!.filter { it.category_id != 9L }
-                    Log.d("CategoryForecast", "Loaded ${forecasts.size} category forecasts (normalized=$normalized)")
+                    Log.d("CategoryForecast", "Loaded ${forecasts.size} category forecasts")
                 } else {
                     errorMessage = "Server tra ve loi: ${response.code()}"
                     Log.e("CategoryForecast", "Error: ${response.code()} - ${response.errorBody()?.string()}")

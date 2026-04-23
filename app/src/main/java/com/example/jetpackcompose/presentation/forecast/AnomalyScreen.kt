@@ -132,7 +132,7 @@ fun AnomalyScreen(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "An toàn! ✨",
+                            text = "An toàn!",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF2E7D32),
@@ -226,20 +226,20 @@ fun AnomalyCard(anomaly: AnomalyResponse) {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_warning),
-                        contentDescription = null,
-                        tint = Color(0xFFEF6C00),
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Độ tin cậy AI: ${(anomaly.anomaly_score * 100).toInt()}%",
-                        fontFamily = montserrat,
-                        fontSize = 11.sp,
-                        color = Color(0xFFE65100),
-                        fontWeight = FontWeight.Medium
-                    )
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.ic_warning),
+//                        contentDescription = null,
+//                        tint = Color(0xFFEF6C00),
+//                        modifier = Modifier.size(14.dp)
+//                    )
+//                    Spacer(modifier = Modifier.width(6.dp))
+//                    Text(
+//                        text = "Độ tin cậy AI: ${(anomaly.anomaly_score * 100).toInt()}%",
+//                        fontFamily = montserrat,
+//                        fontSize = 11.sp,
+//                        color = Color(0xFFE65100),
+//                        fontWeight = FontWeight.Medium
+//                    )
                 }
             }
         }

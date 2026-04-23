@@ -16,8 +16,8 @@ import com.example.jetpackcompose.data.local.tflite.ExpenseForecastHelper
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel quản lý dự đoán chi tiêu TUẦN TỚI bằng model TFLite.
- * Không cần userId — model universal cho mọi user.
+ * ViewModel quản lý dự đoán chi tiêu ĂN UỐNG TUẦN TỚI bằng model TFLite.
+ * Model chỉ train trên category ăn uống (category_id=2) cho kết quả ổn định.
  */
 @HiltViewModel
 class ForecastViewModel @Inject constructor(
@@ -67,8 +67,8 @@ class ForecastViewModel @Inject constructor(
     }
 
     /**
-     * Chạy dự đoán chi tiêu TUẦN tiếp theo.
-     * Aggregate dữ liệu theo tuần từ API giao dịch tháng hiện tại.
+     * Chạy dự đoán chi tiêu ĂN UỐNG TUẦN tiếp theo.
+     * Dữ liệu input chỉ lấy category ăn uống từ API.
      */
     fun runPrediction() {
         if (!isModelReady) {
@@ -76,7 +76,7 @@ class ForecastViewModel @Inject constructor(
             return
         }
 
-        statusMessage = "Đang đồng bộ dữ liệu input 4 tuần chuẩn từ Server..."
+        statusMessage = "Đang đồng bộ dữ liệu ăn uống 4 tuần từ Server..."
         isLoading = true
 
         
@@ -114,7 +114,7 @@ class ForecastViewModel @Inject constructor(
         val maxVal = final4Weeks.maxOrNull() ?: 0.0
         val scaleValue = if (maxVal > 0) maxVal else 2000000.0
 
-        statusMessage = "Đang dự đoán dựa trên data 4 tuần..."
+        statusMessage = "Đang dự đoán ăn uống dựa trên data 4 tuần..."
         val result = ExpenseForecastHelper.predict(final4Weeks, scaleValue)
 
         if (result != null) {

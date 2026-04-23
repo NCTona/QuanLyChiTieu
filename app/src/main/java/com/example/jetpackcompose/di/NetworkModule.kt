@@ -4,7 +4,7 @@ import android.content.Context
 import com.example.jetpackcompose.data.remote.ApiService
 import com.example.jetpackcompose.data.remote.BaseURL
 import com.example.jetpackcompose.data.remote.RetrofitProvider
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
+import com.example.jetpackcompose.data.remote.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides

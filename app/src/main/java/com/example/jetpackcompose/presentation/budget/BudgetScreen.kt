@@ -96,7 +96,7 @@ fun BudgetScreen(navController: NavController) {
     ).sumOf { it.text.toLongOrNull() ?: 0L }
 
     LaunchedEffect(Unit) {
-        aiViewModel.loadForecasts(normalized = true)
+        aiViewModel.loadForecasts()
         viewModel.getBudgetTransaction(
             onError = { isLoading = false },
             onSuccess = {
@@ -118,7 +118,7 @@ fun BudgetScreen(navController: NavController) {
         showPopup = showPopup,
         successMessage = successMessage,
         errorMessage = errorMessage,
-        onDismiss = { showPopup = false } // Đóng popup khi nhấn ngoài
+        onDismiss = { showPopup = false }
     )
 
     MaterialTheme {
@@ -253,7 +253,7 @@ fun BudgetScreen(navController: NavController) {
                                     )
                                 }
                                 Text(
-                                    text = "₫",
+                                    text = "đ",
                                     fontFamily = montserrat,
                                     color = textColor,
                                     fontSize = 14.sp,
@@ -261,57 +261,192 @@ fun BudgetScreen(navController: NavController) {
                                     modifier = Modifier.padding(start = 4.dp)
                                 )
                             }
+
+                            // ===== AI Suggestion Section =====
                             if (forecast != null) {
                                 val formatter = java.text.NumberFormat.getNumberInstance(java.util.Locale("vi", "VN"))
-                                val suggestedValue = forecast.predicted_spending.toLong()
-                                val formattedValue = formatter.format(suggestedValue)
+                                val predicted = forecast.predicted_spending.toLong()
+                                val currentBudget = value.text.toLongOrNull() ?: 0L
 
                                 HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 6.dp),
                                     thickness = 0.5.dp,
                                     color = Color.LightGray
                                 )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "AI gợi ý: $formattedValue ₫",
-                                        fontFamily = montserrat,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = primaryColor
-                                    )
-                                    TextButton(
-                                        onClick = {
-                                            val newVal = TextFieldValue(suggestedValue.toString())
-                                            when (label) {
-                                                "Nhà ở" -> houseValue = newVal
-                                                "Chi phí ăn uống" -> foodValue = newVal
-                                                "Mua sắm quần áo" -> shoppingValue = newVal
-                                                "Đi lại" -> movingValue = newVal
-                                                "Chăm sóc sắc đẹp" -> cosmeticValue = newVal
-                                                "Giao lưu" -> exchangingValue = newVal
-                                                "Y tế" -> medicalValue = newVal
-                                                "Học tập" -> educatingValue = newVal
-                                                "Khoản tiết kiệm" -> saveValue = newVal
-                                            }
-                                        },
-                                        shape = RoundedCornerShape(6.dp),
-                                        colors = ButtonDefaults.textButtonColors(
-                                            containerColor = primaryColor,
-                                            contentColor = Color.White
-                                        ),
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+
+                                if (predicted <= currentBudget && currentBudget > 0) {
+                                    // Du doan <= ngan sach -> goi y lam tron len hang chuc nghin
+                                    val roundedUp = ((predicted + 9999) / 10000) * 10000
+                                    val formattedRounded = formatter.format(roundedUp)
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = "Áp dụng",
+                                            text = "AI gợi ý: ${formattedRounded}đ",
                                             fontFamily = montserrat,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color.White
+                                            color = primaryColor
                                         )
+                                        TextButton(
+                                            onClick = {
+                                                val newVal = TextFieldValue(roundedUp.toString())
+                                                when (label) {
+                                                    "Nhà ở" -> houseValue = newVal
+                                                    "Chi phí ăn uống" -> foodValue = newVal
+                                                    "Mua sắm quần áo" -> shoppingValue = newVal
+                                                    "Đi lại" -> movingValue = newVal
+                                                    "Chăm sóc sắc đẹp" -> cosmeticValue = newVal
+                                                    "Giao lưu" -> exchangingValue = newVal
+                                                    "Y tế" -> medicalValue = newVal
+                                                    "Học tập" -> educatingValue = newVal
+                                                    "Khoản tiết kiệm" -> saveValue = newVal
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.textButtonColors(
+                                                containerColor = primaryColor,
+                                                contentColor = Color.White
+                                            ),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "Áp dụng",
+                                                fontFamily = montserrat,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                } else if (predicted > currentBudget && currentBudget > 0) {
+                                    // Du doan > ngan sach -> goi y budget moi
+                                    val suggestedNew = predicted
+                                    val roundedSuggested = ((suggestedNew + 9999) / 10000) * 10000
+                                    val formattedPredicted = formatter.format(predicted)
+                                    val overAmount = predicted - currentBudget
+
+                                    // Tinh so du tu cac category khac (loai tiet kiem)
+                                    val totalSurplus = aiViewModel.forecasts
+                                        .filter { it.category_id != categoryId && it.category_id != 9L && it.budget > 0 }
+                                        .filter { it.predicted_spending < it.budget }
+                                        .sumOf { (it.budget - it.predicted_spending).toLong() }
+
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "Có khả năng vượt ${formatter.format(overAmount)}đ (dự kiến: ${formattedPredicted}đ)",
+                                            fontFamily = montserrat,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFFE53935)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                        if (roundedSuggested <= totalSurplus + currentBudget) {
+                                            // So du du de bu -> goi y budget moi + nut Ap dung
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text(
+                                                    text = "Gợi ý: ${formatter.format(roundedSuggested)}đ",
+                                                    fontFamily = montserrat,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = Color(0xFF1565C0)
+                                                )
+                                                TextButton(
+                                                    onClick = {
+                                                        val newVal = TextFieldValue(roundedSuggested.toString())
+                                                        when (label) {
+                                                            "Nhà ở" -> houseValue = newVal
+                                                            "Chi phí ăn uống" -> foodValue = newVal
+                                                            "Mua sắm quần áo" -> shoppingValue = newVal
+                                                            "Đi lại" -> movingValue = newVal
+                                                            "Chăm sóc sắc đẹp" -> cosmeticValue = newVal
+                                                            "Giao lưu" -> exchangingValue = newVal
+                                                            "Y tế" -> medicalValue = newVal
+                                                            "Học tập" -> educatingValue = newVal
+                                                            "Khoản tiết kiệm" -> saveValue = newVal
+                                                        }
+                                                    },
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    colors = ButtonDefaults.textButtonColors(
+                                                        containerColor = Color(0xFF1565C0),
+                                                        contentColor = Color.White
+                                                    ),
+                                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = "Áp dụng",
+                                                        fontFamily = montserrat,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            // Khong du so du -> khuyen han che
+                                            Text(
+                                                text = "Số dư cuối tháng không đủ để bù. Nên hạn chế chi tiêu danh mục này.",
+                                                fontFamily = montserrat,
+                                                fontSize = 11.sp,
+                                                color = Color(0xFFFF8F00)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    // Chua dat ngan sach -> goi y dua tren du doan
+                                    val roundedUp = ((predicted + 9999) / 10000) * 10000
+                                    val formattedRounded = formatter.format(roundedUp)
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "AI gợi ý: ${formattedRounded}đ",
+                                            fontFamily = montserrat,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = primaryColor
+                                        )
+                                        TextButton(
+                                            onClick = {
+                                                val newVal = TextFieldValue(roundedUp.toString())
+                                                when (label) {
+                                                    "Nhà ở" -> houseValue = newVal
+                                                    "Chi phí ăn uống" -> foodValue = newVal
+                                                    "Mua sắm quần áo" -> shoppingValue = newVal
+                                                    "Đi lại" -> movingValue = newVal
+                                                    "Chăm sóc sắc đẹp" -> cosmeticValue = newVal
+                                                    "Giao lưu" -> exchangingValue = newVal
+                                                    "Y tế" -> medicalValue = newVal
+                                                    "Học tập" -> educatingValue = newVal
+                                                    "Khoản tiết kiệm" -> saveValue = newVal
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.textButtonColors(
+                                                containerColor = primaryColor,
+                                                contentColor = Color.White
+                                            ),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "Áp dụng",
+                                                fontFamily = montserrat,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color.White
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -326,7 +461,7 @@ fun BudgetScreen(navController: NavController) {
                             .padding(horizontal = 16.dp),
                     ) {
                         Text(
-                            text = "Phù hợp cho khoản thu đầu vào hàng tháng: %,d₫".format(suitableIncome),
+                            text = "Phù hợp cho khoản thu đầu vào hàng tháng: %,dđ".format(suitableIncome),
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             fontFamily = montserrat,
                             fontWeight = FontWeight.Normal,
@@ -356,11 +491,12 @@ fun BudgetScreen(navController: NavController) {
                                     LimitTransaction.CategoryLimit(4, movingValue.text.toLongOrNull() ?: 0L),
                                     LimitTransaction.CategoryLimit(5, cosmeticValue.text.toLongOrNull() ?: 0L),
                                     LimitTransaction.CategoryLimit(6, exchangingValue.text.toLongOrNull() ?: 0L),
-                                    LimitTransaction.CategoryLimit(7, medicalValue.text.toLongOrNull() ?: 0L), LimitTransaction.CategoryLimit(8, educatingValue.text.toLongOrNull() ?: 0L), LimitTransaction.CategoryLimit(9, saveValue.text.toLongOrNull() ?: 0L)
+                                    LimitTransaction.CategoryLimit(7, medicalValue.text.toLongOrNull() ?: 0L),
+                                    LimitTransaction.CategoryLimit(8, educatingValue.text.toLongOrNull() ?: 0L),
+                                    LimitTransaction.CategoryLimit(9, saveValue.text.toLongOrNull() ?: 0L)
                                 )
 
                                 val limitTransaction: LimitTransaction = LimitTransaction(categoryLimits)
-                                // Gọi ViewModel hoặc logic khác để lưu dữ liệu
                                 putViewModel.addLimitTransaction(
                                     data = limitTransaction.limits,
                                      onError = {
@@ -388,4 +524,3 @@ fun BudgetScreen(navController: NavController) {
 fun BudgetScreenPreview() {
 //    BudgetScreen()
 }
-

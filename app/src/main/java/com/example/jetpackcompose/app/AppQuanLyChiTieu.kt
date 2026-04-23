@@ -1,6 +1,5 @@
 package com.example.jetpackcompose.app
 
-import com.example.jetpackcompose.data.remote.dto.Transaction
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -20,6 +19,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -202,272 +203,136 @@ fun AppQuanLyChiTieu(transactionStorage: TransactionStorage) {
         )
     }
 
-    // Kiểm tra nếu Token đã được xác nhận hay không
-    if (!isLoggedIn) {
-        NavHost(navController = navController, startDestination = "signup") {
-            composable("signup") { SignUpScreen(navController) }
-            composable("signin") { SignInScreen(navController) }
-            composable("forgotpassword") { ForgotPasswordScreen(navController) }
-            composable(
-                "setPassword/{email}",
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            )
-            {
-                val email = it.arguments?.getString("email") ?: ""
-                SetPasswordContent(navController, email)
-            }
-            composable(
-                "otp/{email}",
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            ) {
-                val email = it.arguments?.getString("email") ?: ""
-                OTPContent(navController, email)
-            }
+    val startDestination = if (!isLoggedIn) "signup" else "mainscreen"
 
-            composable("mainscreen") { MainScreen(navController) }
-            composable("anual") { AnualScreen(navController) }
-            composable("other") { OtherScreen(navController) }
-            composable("inputfixedtab") { InputFixedTab(navController) }
-            composable("calendar") { CalendarScreen(navController) }
-            composable("budget") { BudgetScreen(navController) }
-            composable("findTransaction") { FindCalendarScreen(navController) }
-            composable("transactionNotification") { TransactionNotificationScreen(navController) }
-            composable("forecast") { ForecastScreen(navController) }
-            composable("on_device_forecast") { OnDeviceForecastScreen(navController) }
-            composable("category_forecast") { CategoryForecastScreen(navController) }
-            composable("anomaly_detect") { AnomalyScreen(navController) }
-            composable("spending_alert") { SpendingAlertScreen(navController) }
-
-            // Chỉnh sửa giao dịch (truyền transactionId)
-            composable(
-                "editExpense/{transactionId}?date={transactionDate}",
-                arguments = listOf(
-                    navArgument("transactionId") { type = NavType.IntType },
-                    navArgument("transactionDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArgument
-                val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
-                val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
-
-                // Chuyển đến màn hình chỉnh sửa chi tiêu
-                EditExpenseTransaction(
-                    navController = navController,
-                    transactionId = transactionId,
-                    transactionDate = transactionDate
-                )
-            }
-
-            composable(
-                "editIncome/{transactionId}?date={transactionDate}",
-                arguments = listOf(
-                    navArgument("transactionId") { type = NavType.IntType },
-                    navArgument("transactionDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArgument
-                val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
-                val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
-
-                // Chuyển đến màn hình chỉnh sửa thu nhập
-                EditIncomeTransaction(
-                    navController = navController,
-                    transactionId = transactionId,
-                    transactionDate = transactionDate
-                )
-            }
-
-
-            composable(
-                "editFixedExpense/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
-                arguments = listOf(
-                    navArgument("fixedTransactionId") { type = NavType.IntType },
-                    navArgument("startDate") { type = NavType.StringType; nullable = true },
-                    navArgument("endDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArguments
-                val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
-                val startDate = backStackEntry.arguments?.getString("startDate")
-                val endDate = backStackEntry.arguments?.getString("endDate")
-
-                EditFixedExpenseTransaction(
-                    navController = navController,
-                    fixedTransactionId = fixedTransactionId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            }
-
-            composable(
-                "editFixedIncome/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
-                arguments = listOf(
-                    navArgument("fixedTransactionId") { type = NavType.IntType },
-                    navArgument("startDate") { type = NavType.StringType; nullable = true },
-                    navArgument("endDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArguments
-                val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
-                val startDate = backStackEntry.arguments?.getString("startDate")
-                val endDate = backStackEntry.arguments?.getString("endDate")
-
-                EditIncomeExpenseTransaction(
-                    navController = navController,
-                    fixedTransactionId = fixedTransactionId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            }
-
-
-            composable("postExpenseNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
-                val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
-                val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
-                PostExpenseNotiTransaction(navController, amount, selectedDate, index)
-            }
-            composable("postIncomeNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
-                val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
-                val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
-                PostIncomeNotiTransaction(navController, amount, selectedDate, index)
-            }
-
-        }
-    } else {
-        NavHost(navController = navController, startDestination = "mainscreen") {
-            composable("signup") { SignUpScreen(navController) }
-            composable("signin") { SignInScreen(navController) }
-            composable("forgotpassword") { ForgotPasswordScreen(navController) }
-            composable(
-                "setPassword/{email}",
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            )
-            {
-                val email = it.arguments?.getString("email") ?: ""
-                SetPasswordContent(navController, email)
-            }
-            composable(
-                "otp/{email}",
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            ) {
-                val email = it.arguments?.getString("email") ?: ""
-                OTPContent(navController, email)
-            }
-            composable("mainscreen") { MainScreen(navController) }
-            composable("anual") { AnualScreen(navController) }
-            composable("other") { OtherScreen(navController) }
-            composable("inputfixedtab") { InputFixedTab(navController) }
-            composable("calendar") { CalendarScreen(navController) }
-            composable("budget") { BudgetScreen(navController) }
-            composable("findTransaction") { FindCalendarScreen(navController) }
-            composable("transactionNotification") { TransactionNotificationScreen(navController) }
-            composable("forecast") { ForecastScreen(navController) }
-            composable("on_device_forecast") { OnDeviceForecastScreen(navController) }
-            composable("category_forecast") { CategoryForecastScreen(navController) }
-            composable("anomaly_detect") { AnomalyScreen(navController) }
-            composable("spending_alert") { SpendingAlertScreen(navController) }
-
-
-            // Chỉnh sửa giao dịch (truyền transactionId)
-            composable(
-                "editExpense/{transactionId}?date={transactionDate}",
-                arguments = listOf(
-                    navArgument("transactionId") { type = NavType.IntType },
-                    navArgument("transactionDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArgument
-                val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
-                val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
-
-                // Chuyển đến màn hình chỉnh sửa chi tiêu
-                EditExpenseTransaction(
-                    navController = navController,
-                    transactionId = transactionId,
-                    transactionDate = transactionDate
-                )
-            }
-
-            composable(
-                "editIncome/{transactionId}?date={transactionDate}",
-                arguments = listOf(
-                    navArgument("transactionId") { type = NavType.IntType },
-                    navArgument("transactionDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArgument
-                val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
-                val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
-
-                // Chuyển đến màn hình chỉnh sửa thu nhập
-                EditIncomeTransaction(
-                    navController = navController,
-                    transactionId = transactionId,
-                    transactionDate = transactionDate
-                )
-            }
-
-
-            composable(
-                "editFixedExpense/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
-                arguments = listOf(
-                    navArgument("fixedTransactionId") { type = NavType.IntType },
-                    navArgument("startDate") { type = NavType.StringType; nullable = true },
-                    navArgument("endDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArguments
-                val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
-                val startDate = backStackEntry.arguments?.getString("startDate")
-                val endDate = backStackEntry.arguments?.getString("endDate")
-
-                EditFixedExpenseTransaction(
-                    navController = navController,
-                    fixedTransactionId = fixedTransactionId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            }
-
-            composable(
-                "editFixedIncome/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
-                arguments = listOf(
-                    navArgument("fixedTransactionId") { type = NavType.IntType },
-                    navArgument("startDate") { type = NavType.StringType; nullable = true },
-                    navArgument("endDate") { type = NavType.StringType; nullable = true }
-                )
-            ) { backStackEntry ->
-                // Lấy các tham số từ NavArguments
-                val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
-                val startDate = backStackEntry.arguments?.getString("startDate")
-                val endDate = backStackEntry.arguments?.getString("endDate")
-
-                EditIncomeExpenseTransaction(
-                    navController = navController,
-                    fixedTransactionId = fixedTransactionId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            }
-
-            composable("postExpenseNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
-                val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
-                val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
-                PostExpenseNotiTransaction(navController, amount, selectedDate, index)
-            }
-            composable("postIncomeNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
-                val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
-                val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
-                PostIncomeNotiTransaction(navController, amount, selectedDate, index)
-            }
-        }
+    NavHost(navController = navController, startDestination = startDestination) {
+        addAllRoutes(navController)
     }
 }
 
+/**
+ * Extension function chứa toàn bộ navigation routes.
+ * Tránh duplicate giữa nhánh đã đăng nhập và chưa đăng nhập.
+ */
+private fun NavGraphBuilder.addAllRoutes(navController: NavHostController) {
+    // Auth
+    composable("signup") { SignUpScreen(navController) }
+    composable("signin") { SignInScreen(navController) }
+    composable("forgotpassword") { ForgotPasswordScreen(navController) }
+    composable(
+        "setPassword/{email}",
+        arguments = listOf(navArgument("email") { type = NavType.StringType })
+    ) {
+        val email = it.arguments?.getString("email") ?: ""
+        SetPasswordContent(navController, email)
+    }
+    composable(
+        "otp/{email}",
+        arguments = listOf(navArgument("email") { type = NavType.StringType })
+    ) {
+        val email = it.arguments?.getString("email") ?: ""
+        OTPContent(navController, email)
+    }
 
+    // Main
+    composable("mainscreen") { MainScreen(navController) }
+    composable("anual") { AnualScreen(navController) }
+    composable("other") { OtherScreen(navController) }
+    composable("inputfixedtab") { InputFixedTab(navController) }
+    composable("calendar") { CalendarScreen(navController) }
+    composable("budget") { BudgetScreen(navController) }
+    composable("findTransaction") { FindCalendarScreen(navController) }
+    composable("transactionNotification") { TransactionNotificationScreen(navController) }
 
+    // AI / Forecast
+    composable("forecast") { ForecastScreen(navController) }
+    composable("on_device_forecast") { OnDeviceForecastScreen(navController) }
+    composable("category_forecast") { CategoryForecastScreen(navController) }
+    composable("anomaly_detect") { AnomalyScreen(navController) }
+    composable("spending_alert") { SpendingAlertScreen(navController) }
 
+    // Edit transactions
+    composable(
+        "editExpense/{transactionId}?date={transactionDate}",
+        arguments = listOf(
+            navArgument("transactionId") { type = NavType.IntType },
+            navArgument("transactionDate") { type = NavType.StringType; nullable = true }
+        )
+    ) { backStackEntry ->
+        val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
+        val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
+        EditExpenseTransaction(
+            navController = navController,
+            transactionId = transactionId,
+            transactionDate = transactionDate
+        )
+    }
+
+    composable(
+        "editIncome/{transactionId}?date={transactionDate}",
+        arguments = listOf(
+            navArgument("transactionId") { type = NavType.IntType },
+            navArgument("transactionDate") { type = NavType.StringType; nullable = true }
+        )
+    ) { backStackEntry ->
+        val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: 0
+        val transactionDate = backStackEntry.arguments?.getString("transactionDate") ?: ""
+        EditIncomeTransaction(
+            navController = navController,
+            transactionId = transactionId,
+            transactionDate = transactionDate
+        )
+    }
+
+    composable(
+        "editFixedExpense/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
+        arguments = listOf(
+            navArgument("fixedTransactionId") { type = NavType.IntType },
+            navArgument("startDate") { type = NavType.StringType; nullable = true },
+            navArgument("endDate") { type = NavType.StringType; nullable = true }
+        )
+    ) { backStackEntry ->
+        val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
+        val startDate = backStackEntry.arguments?.getString("startDate")
+        val endDate = backStackEntry.arguments?.getString("endDate")
+        EditFixedExpenseTransaction(
+            navController = navController,
+            fixedTransactionId = fixedTransactionId,
+            startDate = startDate,
+            endDate = endDate
+        )
+    }
+
+    composable(
+        "editFixedIncome/{fixedTransactionId}?startDate={startDate}&endDate={endDate}",
+        arguments = listOf(
+            navArgument("fixedTransactionId") { type = NavType.IntType },
+            navArgument("startDate") { type = NavType.StringType; nullable = true },
+            navArgument("endDate") { type = NavType.StringType; nullable = true }
+        )
+    ) { backStackEntry ->
+        val fixedTransactionId = backStackEntry.arguments?.getInt("fixedTransactionId") ?: 0
+        val startDate = backStackEntry.arguments?.getString("startDate")
+        val endDate = backStackEntry.arguments?.getString("endDate")
+        EditIncomeExpenseTransaction(
+            navController = navController,
+            fixedTransactionId = fixedTransactionId,
+            startDate = startDate,
+            endDate = endDate
+        )
+    }
+
+    // Notification transactions
+    composable("postExpenseNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
+        val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
+        val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
+        val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
+        PostExpenseNotiTransaction(navController, amount, selectedDate, index)
+    }
+    composable("postIncomeNotiTransaction/{amount}/{selectedDate}/{index}") { backStackEntry ->
+        val amount = backStackEntry.arguments?.getString("amount")?.toLongOrNull() ?: 0L
+        val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
+        val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
+        PostIncomeNotiTransaction(navController, amount, selectedDate, index)
+    }
+}

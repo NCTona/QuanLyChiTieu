@@ -54,24 +54,22 @@ class TokenStorage(context: Context) {
     }
 
     fun clearAccessTokenExpired(context: Context) {
-        val tokenStorage = TokenStorage(context)
-        val accessToken = tokenStorage.getAccessToken() ?: return
+        val accessToken = getAccessToken() ?: return
 
         val expireTime = JwtUtils.getExpireTimeMillis(accessToken)
 
-        var delay = expireTime - System.currentTimeMillis()
+        val delay = expireTime - System.currentTimeMillis()
 
         if (delay <= 0) prefs.edit().remove("auth_token").apply()
 
     }
 
     fun isAccessTokenExpired(context: Context): Boolean {
-        val tokenStorage = TokenStorage(context)
-        val accessToken = tokenStorage.getAccessToken() ?: return true
+        val accessToken = getAccessToken() ?: return true
 
         val expireTime = JwtUtils.getExpireTimeMillis(accessToken)
 
-        var delay = expireTime - System.currentTimeMillis()
+        val delay = expireTime - System.currentTimeMillis()
 
         if (delay <= 0) return true
 
@@ -79,12 +77,11 @@ class TokenStorage(context: Context) {
     }
 
     fun isRefreshTokenExpired(context: Context): Boolean {
-        val tokenStorage = TokenStorage(context)
-        val refreshToken = tokenStorage.getRefreshToken() ?: return false
+        val refreshToken = getRefreshToken() ?: return false
 
         val expireTime = JwtUtils.getExpireTimeMillis(refreshToken)
 
-        var delay = expireTime - System.currentTimeMillis()
+        val delay = expireTime - System.currentTimeMillis()
 
         if (delay <= 0) return true
 

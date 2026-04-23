@@ -11,7 +11,7 @@ import com.example.jetpackcompose.data.remote.dto.GetFixedTransactionResponse
 import com.example.jetpackcompose.data.remote.dto.LimitTransaction
 import com.example.jetpackcompose.data.remote.dto.LoginData
 import com.example.jetpackcompose.data.remote.dto.LoginResponse
-import com.example.jetpackcompose.data.remote.dto.OTPRespone
+import com.example.jetpackcompose.data.remote.dto.OTPResponse
 import com.example.jetpackcompose.data.remote.dto.PostTransactionResponse
 import com.example.jetpackcompose.data.remote.dto.RefreshToken
 import com.example.jetpackcompose.data.remote.dto.RegistrationData
@@ -39,7 +39,7 @@ import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 object BaseURL {
-    val baseUrl = "https://jay-humorous-koi.ngrok-free.app"
+    const val baseUrl = "https://jay-humorous-koi.ngrok-free.app"
 }
 
 interface ApiService {
@@ -58,7 +58,7 @@ interface ApiService {
     suspend fun refreshToken(@Body refreshToken: RefreshToken): Response<LoginResponse>
 
     @POST("/api/users/verify-otp")
-    suspend fun verifyOtp(@Body verifyOtp: VerifyOtp): Response<OTPRespone>
+    suspend fun verifyOtp(@Body verifyOtp: VerifyOtp): Response<OTPResponse>
 
     @POST("/api/users/send-otp")
     suspend fun sendOtp(@Body sendOtp: SendOtp): Response<ApiResponse>
@@ -147,9 +147,7 @@ interface ApiService {
     suspend fun downloadModel(): Response<ResponseBody>
 
     @GET("/api/forecast/categories")
-    suspend fun getCategoryForecasts(
-        @Query("normalized") normalized: Boolean? = null
-    ): Response<List<CategoryForecastResponse>>
+    suspend fun getCategoryForecasts(): Response<List<CategoryForecastResponse>>
 
     @GET("/api/forecast/trend/{categoryId}")
     suspend fun getCategoryTrend(

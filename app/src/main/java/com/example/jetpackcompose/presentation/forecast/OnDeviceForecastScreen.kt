@@ -33,7 +33,6 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<ForecastViewModel>()
 
-    // Tính số ngày còn lại trong tháng (giống server)
     val remainingDays = remember {
         val calendar = Calendar.getInstance()
         val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
@@ -48,31 +47,35 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                     title = {
                         Box(
                             modifier = Modifier
-                                .background(color = Color(0xfff5f5f5))
                                 .height(50.dp)
-                                .fillMaxSize()
-                                .padding(end = 16.dp),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth(),
                         ) {
+                            IconButton(
+                                onClick = { navController.popBackStack() },
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .offset(x = (-8).dp)
+                                    .offset(y = (1).dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
+                                    contentDescription = "Quay l\u1ea1i",
+                                    tint = primaryColor,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
                             Text(
-                                text = "Dự đoán cá nhân (TFLite)",
+                                text = "D\u1ef1 \u0111o\u00e1n \u0103n u\u1ed1ng (TFLite)",
                                 fontFamily = montserrat,
                                 style = TextStyle(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp,
                                 ),
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
-                                contentDescription = "Quay lại",
-                                tint = primaryColor,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .offset(x = (-8).dp)
                             )
                         }
                     },
@@ -92,7 +95,6 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Tình trạng Model
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -100,7 +102,7 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Trạng thái AI On-Device:",
+                        text = "Tr\u1ea1ng th\u00e1i AI On-Device:",
                         fontFamily = montserrat,
                         fontWeight = FontWeight.Bold,
                         color = Color.DarkGray
@@ -112,21 +114,20 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                         color = if (viewModel.isModelReady) Color(0xFF2E7D32) else Color(0xFFC62828),
                         fontSize = 14.sp
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Button(
                         onClick = { viewModel.downloadModel() },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
                         enabled = !viewModel.isLoading
                     ) {
-                        Text(if (viewModel.isModelReady) "Cập nhật Model" else "Tải Model (.tflite)", fontFamily = montserrat)
+                        Text(if (viewModel.isModelReady) "C\u1eadp nh\u1eadt Model" else "T\u1ea3i Model (.tflite)", fontFamily = montserrat)
                     }
                 }
             }
 
-            // Chạy dự đoán
             if (viewModel.isModelReady) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -134,7 +135,9 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Button(
@@ -142,7 +145,7 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
                             enabled = !viewModel.isLoading
                         ) {
-                            Text("Dự đoán ${if (remainingDays > 0) remainingDays else ""} ngày tới", fontFamily = montserrat)
+                            Text("D\u1ef1 \u0111o\u00e1n \u0103n u\u1ed1ng ${if (remainingDays > 0) remainingDays else ""} ng\u00e0y t\u1edbi", fontFamily = montserrat)
                         }
 
                         if (viewModel.isLoading) {
@@ -153,15 +156,15 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                         viewModel.predictedAmount?.let { amount ->
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Kết quả dự báo ${remainingDays} ngày (TFLite):",
+                                text = "D\u1ef1 b\u00e1o \u0103n u\u1ed1ng ${remainingDays} ng\u00e0y t\u1edbi (TFLite):",
                                 fontFamily = montserrat,
                                 fontSize = 14.sp,
                                 color = Color.DarkGray
                             )
-                            
+
                             val dailyAvg = amount / 7.0
                             val predictedForRemaining = dailyAvg * remainingDays.coerceAtLeast(0)
-                            
+
                             val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
                             Text(
                                 text = "${formatter.format(predictedForRemaining.toLong())} VND",
@@ -173,7 +176,7 @@ fun OnDeviceForecastScreen(navController: NavHostController) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Dự đoán này được tạo trực tiếp tại máy điện thoại, không cần nối mạng đến server AI.",
+                                text = "D\u1ef1 \u0111o\u00e1n chi ti\u00eau \u0103n u\u1ed1ng, \u0111\u01b0\u1ee3c t\u1ea1o tr\u1ef1c ti\u1ebfp t\u1ea1i m\u00e1y \u0111i\u1ec7n tho\u1ea1i, kh\u00f4ng c\u1ea7n n\u1ed1i m\u1ea1ng \u0111\u1ebfn server AI.",
                                 fontFamily = montserrat,
                                 fontSize = 11.sp,
                                 textAlign = TextAlign.Center,

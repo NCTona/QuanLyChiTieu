@@ -14,11 +14,11 @@ object SecurityGuard {
         "D6:1C:7E:B9:2E:EE:28:B8:2E:E4:DC:7B:74:16:78:55:" +
                 "D2:F9:E4:63:03:DF:1B:16:72:CD:36:7A:C8:EB:F6:5A"
 
-    private const val EXPECTED_package com.example.jetpackcompose.security "com.example.jetpackcompose"
+    private const val EXPECTED_package = "com.example.jetpackcompose"
 
     fun isAppSecure(context: Context): Boolean {
         return checkSignature(context) &&
-                checkPackageName(context)
+                checkPackageName(context) &&
                 !isDebuggerAttached() &&
                 !isDebuggable(context)
     }
@@ -43,7 +43,7 @@ object SecurityGuard {
 
     // Check package com.example.jetpackcompose.security (anti clone)
     private fun checkPackageName(context: Context): Boolean =
-        context.packageName == EXPECTED_package com.example.jetpackcompose.security Anti-debug
+        context.packageName == EXPECTED_package
     private fun isDebuggerAttached(): Boolean =
         Debug.isDebuggerConnected() || Debug.waitingForDebugger()
 

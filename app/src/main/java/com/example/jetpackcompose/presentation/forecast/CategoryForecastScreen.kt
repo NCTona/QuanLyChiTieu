@@ -3,7 +3,6 @@ package com.example.jetpackcompose.presentation.forecast
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,9 +35,8 @@ fun CategoryForecastScreen(navController: NavHostController) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<CategoryForecastViewModel>()
 
-    // Auto-load khi vao man hinh
     LaunchedEffect(Unit) {
-        viewModel.loadForecasts(normalized = false)
+        viewModel.loadForecasts()
     }
 
     MaterialTheme {
@@ -50,29 +48,34 @@ fun CategoryForecastScreen(navController: NavHostController) {
                             Box(
                                 modifier = Modifier
                                     .height(50.dp)
-                                    .fillMaxWidth()
-                                    .padding(end = 16.dp), // Thêm padding bù cho nút back
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth(),
                             ) {
+                                IconButton(
+                                    onClick = { navController.popBackStack() },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .offset(x = (-8).dp)
+                                        .offset(y = (1).dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
+                                        contentDescription = "Quay lại",
+                                        tint = primaryColor,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+
                                 Text(
-                                    text = "Xu hướng chi tiêu",
+                                    text = "Dự đoán chi tiêu",
                                     fontFamily = montserrat,
                                     style = TextStyle(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
                                     ),
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_arrow_back_ios_24),
-                                    contentDescription = "Quay lại",
-                                    tint = primaryColor,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .offset(x = (-8).dp)
                                 )
                             }
                         },
@@ -135,11 +138,11 @@ fun CategoryForecastScreen(navController: NavHostController) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(
-                                onClick = { viewModel.loadForecasts(normalized = false) },
+                                onClick = { viewModel.loadForecasts() },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                             Text("Thử lại", fontFamily = montserrat, fontSize = 13.sp)
+                                Text("Thử lại", fontFamily = montserrat, fontSize = 13.sp)
                             }
                         }
                     }
@@ -148,7 +151,7 @@ fun CategoryForecastScreen(navController: NavHostController) {
                 // ===== Forecast Cards =====
                 if (viewModel.forecasts.isNotEmpty()) {
                     Text(
-                        "Dự đoán chi tiêu tháng này",
+                        "Dự đoán chi tiêu cuối tháng",
                         fontFamily = montserrat,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
@@ -160,13 +163,10 @@ fun CategoryForecastScreen(navController: NavHostController) {
                         modifier = Modifier.weight(1f)
                     ) {
                         items(viewModel.forecasts) { forecast ->
-                            ForecastCategoryCard(
-                                forecast = forecast
-                            )
+                            ForecastCategoryCard(forecast = forecast)
                         }
                     }
                 }
-
             }
         }
     }
@@ -176,44 +176,40 @@ fun CategoryForecastScreen(navController: NavHostController) {
 private fun ForecastCategoryCard(
     forecast: CategoryForecastResponse
 ) {
-    val trendText = when (forecast.trend) {
-        "increasing" -> {
-            if (forecast.change_percent > 100) "Tăng đột biến"
-            else if (forecast.change_percent > 30) "Tăng đáng kể"
-            else "Có xu hướng tăng"
-        }
-        "decreasing" -> {
-            if (forecast.change_percent < -50) "Giảm rất mạnh"
-            else if (forecast.change_percent < -20) "Giảm đáng kể"
-            else "Có xu hướng giảm"
-        }
-        else -> "Duy trì ổn định"
+    val statusColor = when (forecast.status) {
+        "over_budget" -> Color(0xFFE53935)
+        "warning" -> Color(0xFFFF8F00)
+        "safe" -> Color(0xFF43A047)
+        else -> Color(0xFF757575)
     }
-    
-    val trendColor = when (forecast.trend) {
-        "increasing" -> Color(0xFFE53935)
-        "decreasing" -> Color(0xFF43A047)
-        else -> Color(0xFF1565C0)
+
+    val statusText = when (forecast.status) {
+        "over_budget" -> "Vượt ngân sách"
+        "warning" -> "Cảnh báo"
+        "safe" -> "An toàn"
+        "no_budget" -> "Chưa đặt ngân sách"
+        else -> forecast.status
     }
 
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxWidth()
         ) {
-            // Left: Category info
-            Column(modifier = Modifier.weight(1f)) {
+            // Row 1: Category name + Status badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 val categoryName = when (forecast.category_id) {
-                    1L -> "Chi phí nhà ở"
+                       1L -> "Chi phí nhà ở"
                     2L -> "Ăn uống"
                     3L -> "Mua sắm quần áo"
                     4L -> "Đi lại"
@@ -223,39 +219,111 @@ private fun ForecastCategoryCard(
                     8L -> "Học tập"
                     else -> "Danh mục khác (#${forecast.category_id})"
                 }
-                
+
                 Text(
                     categoryName,
                     fontFamily = montserrat,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = Color(0xFF333333)
+                    color = Color(0xFF333333),
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+
+                // Status badge
                 Text(
-                    "Tháng trước: ${formatVND(forecast.current_spending)}",
+                    statusText,
                     fontFamily = montserrat,
-                    fontSize = 12.sp,
-                    color = Color(0xFF888888)
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = Color.White,
+                    modifier = Modifier
+                        .background(statusColor, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
 
-            // Right: Prediction + Trend
-            Column(horizontalAlignment = Alignment.End) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Row 2: Current spent + Predicted
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        "Đã chi",
+                        fontFamily = montserrat,
+                        fontSize = 11.sp,
+                        color = Color(0xFF888888)
+                    )
+                    Text(
+                        "Dự kiến cuối tháng",
+                        fontFamily = montserrat,
+                        fontSize = 11.sp,
+                        color = Color(0xFF888888)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        formatVND(forecast.current_spent),
+                        fontFamily = montserrat,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        color = Color(0xFF333333)
+                    )
+
+                    Text(
+                        formatVND(forecast.predicted_spending),
+                        fontFamily = montserrat,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = statusColor
+                    )
+                }
+            }
+
+            // Row 3: Budget info
+            if (forecast.budget > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Ngân sách: ${formatVND(forecast.budget)}",
+                        fontFamily = montserrat,
+                        fontSize = 11.sp,
+                        color = Color(0xFF888888)
+                    )
+                    Text(
+                        "Sử dụng: ${forecast.budget_used_pct}%",
+                        fontFamily = montserrat,
+                        fontSize = 11.sp,
+                        color = Color(0xFF888888)
+                    )
+                }
+            }
+
+            // Row 4: Suggestion
+            if (forecast.suggestion.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    formatVND(forecast.predicted_spending),
+                    forecast.suggestion,
                     fontFamily = montserrat,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color(0xFF1B5E20)
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = statusColor
                 )
+            }
+
+            // Row 5: Suggested daily
+            if (forecast.suggested_daily > 0) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    trendText,
+                    "Nên chi ~${formatVND(forecast.suggested_daily)}/ngày",
                     fontFamily = montserrat,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = trendColor
+                    fontSize = 11.sp,
+                    color = Color(0xFF1565C0)
                 )
             }
         }

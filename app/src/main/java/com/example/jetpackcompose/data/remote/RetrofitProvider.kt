@@ -1,7 +1,6 @@
 package com.example.jetpackcompose.data.remote
 
 import android.content.Context
-import com.example.jetpackcompose.network.UnsafeOkHttpClient
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

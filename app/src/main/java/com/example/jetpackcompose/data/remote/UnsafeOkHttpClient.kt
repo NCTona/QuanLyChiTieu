@@ -7,46 +7,39 @@ import javax.net.ssl.*
 
 object UnsafeOkHttpClient {
 
-    // Giữ tương thích ngược cho các ViewModel cũ (Login, SignUp, ForgotPassword...)
+    private data class TrustConfig(
+        val sslSocketFactory: SSLSocketFactory,
+        val trustManager: X509TrustManager
+    )
+
+    private fun createTrustConfig(): TrustConfig {
+        val trustManager = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        }
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
+        return TrustConfig(sslContext.socketFactory, trustManager)
+    }
+
     fun create(): OkHttpClient = createCleanClient()
 
-    // Client Sạch (Dùng cho Refresh Token API để tránh lặp vô hạn 401)
     fun createCleanClient(): OkHttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(
-            object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-            }
-        )
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, trustAllCerts, SecureRandom())
-
+        val config = createTrustConfig()
         return OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+            .sslSocketFactory(config.sslSocketFactory, config.trustManager)
             .hostnameVerifier { _, _ -> true }
             .build()
     }
 
-    // Client được Inject AuthInterceptor & TokenAuthenticator chuẩn OAuth2
     fun createClientWithAuth(
         authInterceptor: okhttp3.Interceptor,
         tokenAuthenticator: okhttp3.Authenticator
     ): OkHttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(
-            object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-            }
-        )
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, trustAllCerts, SecureRandom())
-
+        val config = createTrustConfig()
         return OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+            .sslSocketFactory(config.sslSocketFactory, config.trustManager)
             .hostnameVerifier { _, _ -> true }
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)

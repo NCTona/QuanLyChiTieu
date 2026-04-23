@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Debug
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
@@ -19,11 +18,7 @@ import androidx.activity.compose.setContent
 import com.example.jetpackcompose.app.AppQuanLyChiTieu
 import com.example.jetpackcompose.data.local.TokenStorage
 import com.example.jetpackcompose.app.features.readNotificationTransaction.TransactionStorage
-import com.example.jetpackcompose.security.SecurityGuard
 import dagger.hilt.android.AndroidEntryPoint
-import java.security.MessageDigest
-import java.util.logging.Handler
-import kotlin.system.exitProcess
 
 
 @AndroidEntryPoint
@@ -37,11 +32,6 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-//        if (!SecurityGuard.isAppSecure(this)) {
-//            failSecurely()
-//            return
-//        }
 
         TokenStorage(this).clearAccessTokenExpired(this)
 

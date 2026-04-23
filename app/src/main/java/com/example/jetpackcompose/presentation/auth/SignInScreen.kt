@@ -89,7 +89,7 @@ fun SignInScreen(navController: NavHostController) {
             MyTextFieldComponent(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
-                labelValue = stringResource(id = R.string.email_or_nummber),
+                labelValue = stringResource(id = R.string.number),
                 painterResource = painterResource(id = R.drawable.profile)
             )
 

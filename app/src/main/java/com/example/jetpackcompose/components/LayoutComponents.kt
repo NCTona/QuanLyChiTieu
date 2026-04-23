@@ -33,7 +33,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -574,17 +573,7 @@ fun DropdownRow(
     var selectedOption by remember { mutableStateOf(options[0].second) }
     var showDialog by remember { mutableStateOf(false) }
 
-    if (initialValue == 0){
-        selectedOption = options[0].second // Lưu enum thay vì String
-    } else if (initialValue == 1){
-        selectedOption = options[1].second // Lưu enum thay vì String
-    } else if (initialValue == 2){
-        selectedOption = options[2].second // Lưu enum thay vì String
-    } else if (initialValue == 3){
-        selectedOption = options[3].second // Lưu enum thay vì String
-    } else {
-
-    }
+    options.getOrNull(initialValue)?.second?.let { selectedOption = it }
 
     Row(
         modifier = Modifier
@@ -685,17 +674,7 @@ fun <T : Enum<T>> DropdownRepeat(
 
     var selectedOption by remember { mutableStateOf(options[0].second) } // Lưu enum thay vì String
 
-    if (initialValue == 0){
-        selectedOption = options[0].second // Lưu enum thay vì String
-    } else if (initialValue == 1){
-        selectedOption = options[1].second // Lưu enum thay vì String
-    } else if (initialValue == 2){
-        selectedOption = options[2].second // Lưu enum thay vì String
-    } else if (initialValue == 3){
-        selectedOption = options[3].second // Lưu enum thay vì String
-    } else {
-
-    }
+    options.getOrNull(initialValue)?.second?.let { selectedOption = it }
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -738,7 +717,7 @@ fun <T : Enum<T>> DropdownRepeat(
 
         // Icon mũi tên
         Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(24.dp)
@@ -861,7 +840,7 @@ fun DatePickerRow(
 
         // Mũi tên luôn nằm sát ngoài cùng bên phải
         Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(24.dp)

@@ -49,7 +49,7 @@ data class ApiResponse(
     val message: String
 )
 
-data class OTPRespone(
+data class OTPResponse(
     val status: String,
     val message: String,
     val resetToken: String

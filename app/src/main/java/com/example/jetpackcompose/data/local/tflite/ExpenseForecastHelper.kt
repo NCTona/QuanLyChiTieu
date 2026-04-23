@@ -11,16 +11,16 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * Quản lý việc tải model TFLite từ server và chạy dự đoán chi tiêu.
+ * Quản lý việc tải model TFLite từ server và chạy dự đoán chi tiêu ĂN UỐNG.
+ *
+ * Model chỉ train trên category ăn uống (category_id=2) cho kết quả ổn định.
+ * Các category khác có chi tiêu đột ngột, LSTM không phù hợp.
  *
  * Model nhận đầu vào:
- *  - time_series: [1, WINDOW_SIZE, 1] — chuỗi chi tiêu 4 TUẦN gần nhất (đã normalize)
+ *  - time_series: [1, WINDOW_SIZE, 1] — chuỗi chi tiêu ăn uống 4 TUẦN gần nhất (đã normalize)
  *
  * Model trả về:
- *  - output: [1, 1] — giá trị chi tiêu dự đoán tuần tới (đã normalize)
- *
- * KHÔNG CÒN User Embedding — model universal cho mọi user.
- * Cá nhân hóa thông qua dữ liệu input (mỗi user có chuỗi chi tiêu riêng).
+ *  - output: [1, 1] — giá trị chi tiêu ăn uống dự đoán tuần tới (đã normalize)
  */
 object ExpenseForecastHelper {
 

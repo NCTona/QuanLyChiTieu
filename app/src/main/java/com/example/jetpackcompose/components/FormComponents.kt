@@ -1,11 +1,6 @@
 package com.example.jetpackcompose.components
 
 //noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import com.example.jetpackcompose.data.remote.dto.Transaction
 import android.annotation.SuppressLint
 import android.util.Log

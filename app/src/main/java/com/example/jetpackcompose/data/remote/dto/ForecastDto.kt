@@ -3,13 +3,13 @@ package com.example.jetpackcompose.data.remote.dto
 data class CategoryForecastResponse(
     val category_id: Long,
     val predicted_spending: Double,
-    val current_spending: Double,
-    val trend: String,
-    val change_percent: Double,
-    val budget_limit: Double,
-    val is_essential: Boolean,
-    val recommended_daily_allocation: Double,
-    val reason: String
+    val current_spent: Double,
+    val budget: Double,
+    val budget_used_pct: Double,
+    val forecast_usage_pct: Double,
+    val status: String,
+    val suggestion: String,
+    val suggested_daily: Double
 )
 
 data class TrendResponse(
