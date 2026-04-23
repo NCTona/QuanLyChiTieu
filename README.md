@@ -1,31 +1,31 @@
-# Quan Ly Chi Tieu — Android App
+# Quản Lý Chi Tiêu — Android App
 
-Ung dung Android quan ly chi tieu ca nhan voi Jetpack Compose, tich hop AI du doan chi tieu tren thiet bi (on-device TFLite).
+Ứng dụng Android quản lý chi tiêu cá nhân với Jetpack Compose, tích hợp AI dự đoán chi tiêu trên thiết bị (on-device TFLite).
 
 ## Tech Stack
 
-| Thanh phan | Cong nghe |
+| Thành phần | Công nghệ |
 |---|---|
-| Language | Kotlin |
+| Ngôn ngữ | Kotlin |
 | UI | Jetpack Compose + Material 3 |
-| Architecture | MVVM |
+| Kiến trúc | MVVM |
 | DI | Hilt (Dagger) |
-| Network | Retrofit 2 + OkHttp (SSL pinning) |
+| Mạng | Retrofit 2 + OkHttp (SSL pinning) |
 | AI On-device | TensorFlow Lite 2.14 |
-| Navigation | Navigation Compose 2.8 |
-| Security | EncryptedSharedPreferences + Tink |
-| Background | WorkManager + NotificationListenerService |
+| Điều hướng | Navigation Compose 2.8 |
+| Bảo mật | EncryptedSharedPreferences + Tink |
+| Nền | WorkManager + NotificationListenerService |
 | Build | Gradle KTS (compileSdk 35) |
 | Min SDK | 24 (Android 7.0) |
 
-## Yeu cau
+## Yêu cầu
 
-- **Android Studio** Hedgehog tro len
+- **Android Studio** Hedgehog trở lên
 - **JDK** 17+
 - **Android SDK** 35
-- **Backend server** dang chay (Spring Boot)
+- **Backend server** đang chạy (Spring Boot)
 
-## Cai dat
+## Cài đặt
 
 ### 1. Clone repo
 
@@ -34,9 +34,9 @@ git clone https://github.com/NCTona/QuanLyChiTieu.git
 cd QuanLyChiTieu
 ```
 
-### 2. Cau hinh backend URL
+### 2. Cấu hình backend URL
 
-Sua `BaseURL` trong `app/src/main/java/com/example/jetpackcompose/data/remote/ApiService.kt`:
+Sửa `BaseURL` trong `app/src/main/java/com/example/jetpackcompose/data/remote/ApiService.kt`:
 
 ```kotlin
 object BaseURL {
@@ -44,18 +44,18 @@ object BaseURL {
 }
 ```
 
-### 3. Cau hinh SSL Certificate
+### 3. Cấu hình SSL Certificate
 
-Dat certificate cua backend vao `app/src/main/res/xml/network_security_config.xml` de cho phep ket noi HTTPS.
+Đặt certificate của backend vào `app/src/main/res/xml/network_security_config.xml` để cho phép kết nối HTTPS.
 
-### 4. Tao Release Keystore
+### 4. Tạo Release Keystore
 
 ```bash
 keytool -genkeypair -alias release_key_alias -keyalg RSA -keysize 2048 \
   -storetype JKS -keystore release_keystore.jks -validity 3650
 ```
 
-Cap nhat duong dan keystore trong `app/build.gradle.kts`:
+Cập nhật đường dẫn keystore trong `app/build.gradle.kts`:
 
 ```kotlin
 signingConfigs {
@@ -78,115 +78,115 @@ signingConfigs {
 ./gradlew assembleDebug
 ```
 
-Hoac mo project trong Android Studio va nhan **Run**.
+Hoặc mở project trong Android Studio và nhấn **Run**.
 
-## Tinh nang chinh
+## Tính năng chính
 
-### Quan ly giao dich
-- Them/sua/xoa giao dich thu chi
-- Tim kiem giao dich theo ghi chu, danh muc, so tien
-- Giao dich co dinh (dinh ky hang thang)
-- Doc notification ngan hang tu dong tao giao dich
+### Quản lý giao dịch
+- Thêm/sửa/xóa giao dịch thu chi
+- Tìm kiếm giao dịch theo ghi chú, danh mục, số tiền
+- Giao dịch cố định (định kỳ hàng tháng)
+- Đọc notification ngân hàng tự động tạo giao dịch
 
-### Ngan sach
-- Dat han muc chi tieu theo danh muc
-- Theo doi han muc con lai
+### Ngân sách
+- Đặt hạn mức chi tiêu theo danh mục
+- Theo dõi hạn mức còn lại
 
-### Bao cao
-- Bao cao thu/chi theo thang
-- Bieu do truc quan (pie chart, bar chart)
+### Báo cáo
+- Báo cáo thu/chi theo tháng
+- Biểu đồ trực quan (pie chart, bar chart)
 
-### AI Forecast (tich hop MLOps)
-- Du doan chi tieu theo danh muc (LightGBM — server)
-- Phat hien giao dich bat thuong (Isolation Forest — server)
-- Canh bao ngay chi cao (thong ke — server)
-- Tong hop AI dashboard (3 model trong 1 man hinh)
-- Du doan chi tieu tuan toi (LSTM — on-device TFLite)
+### AI Forecast (tích hợp MLOps)
+- Dự đoán chi tiêu theo danh mục (LightGBM — server)
+- Phát hiện giao dịch bất thường (Isolation Forest — server)
+- Cảnh báo ngày chi cao (thống kê — server)
+- Tổng hợp AI dashboard (3 model trong 1 màn hình)
+- Dự đoán chi tiêu tuần tới (LSTM — on-device TFLite)
 
-### Bao mat
+### Bảo mật
 - JWT Authentication (access + refresh token)
-- EncryptedSharedPreferences (token storage)
+- EncryptedSharedPreferences (lưu token mã hóa)
 - SSL/TLS pinning
-- Anti-tampering (SecurityGuard: kiem tra chu ky APK, package name, debugger)
+- Chống giả mạo (SecurityGuard: kiểm tra chữ ký APK, package name, debugger)
 
-## Cau truc du an
+## Cấu trúc dự án
 
 ```
 app/src/main/java/com/example/jetpackcompose/
-├── MainActivity.kt                  # Entry point
+├── MainActivity.kt                  # Điểm khởi chạy
 ├── QuanLyChiTieuApp.kt             # Hilt Application class
 ├── app/
-│   ├── AppQuanLyChiTieu.kt         # App navigation & routing
+│   ├── AppQuanLyChiTieu.kt         # Điều hướng & routing
 │   └── features/
 │       └── readNotificationTransaction/
 │           ├── ReadTransactionNoti.kt           # NotificationListenerService
-│           ├── PostExpenseNotiTransaction.kt     # Tu dong tao chi tu noti
-│           ├── PostIncomeNotiTransaction.kt      # Tu dong tao thu tu noti
-│           ├── TransactionNotificationScreen.kt  # UI xac nhan giao dich
+│           ├── PostExpenseNotiTransaction.kt     # Tự động tạo chi từ noti
+│           ├── PostIncomeNotiTransaction.kt      # Tự động tạo thu từ noti
+│           ├── TransactionNotificationScreen.kt  # UI xác nhận giao dịch
 │           └── RestartServiceReceiver.kt         # BroadcastReceiver
 ├── data/
 │   ├── local/
 │   │   ├── TokenStorage.kt          # EncryptedSharedPreferences
 │   │   └── tflite/
-│   │       └── ExpenseForecastHelper.kt  # LSTM on-device inference
+│   │       └── ExpenseForecastHelper.kt  # LSTM suy luận trên thiết bị
 │   └── remote/
-│       ├── ApiService.kt            # Retrofit API definitions
-│       ├── AuthInterceptor.kt       # Tu dong gan JWT token
-│       ├── TokenAuthenticator.kt    # Tu dong refresh token
-│       ├── RetrofitProvider.kt      # Retrofit factory
+│       ├── ApiService.kt            # Định nghĩa API (Retrofit)
+│       ├── AuthInterceptor.kt       # Tự động gắn JWT token
+│       ├── TokenAuthenticator.kt    # Tự động refresh token
+│       ├── RetrofitProvider.kt      # Khởi tạo Retrofit
 │       ├── UnsafeOkHttpClient.kt    # OkHttp client builder
-│       └── dto/                     # Data Transfer Objects
+│       └── dto/                     # Các đối tượng truyền dữ liệu
 ├── di/
 │   ├── NetworkModule.kt             # Hilt DI (Retrofit, ApiService)
 │   ├── StorageModule.kt             # Hilt DI (TokenStorage)
 │   └── AuthApi.kt                   # Qualifier cho Auth API
 ├── presentation/
-│   ├── auth/                        # Dang nhap, dang ky, OTP, forgot password
-│   ├── transaction/                 # CRUD giao dich
-│   │   ├── input/                   # Man hinh nhap giao dich
-│   │   ├── edit/                    # Man hinh sua giao dich
-│   │   ├── list/                    # Danh sach giao dich
-│   │   └── fixed/                   # Giao dich co dinh
-│   ├── budget/                      # Han muc ngan sach
-│   ├── report/                      # Bao cao thu chi
-│   ├── forecast/                    # AI dashboard & predictions
-│   │   ├── ForecastScreen.kt        # AI tong hop dashboard
-│   │   ├── CategoryForecastScreen.kt# Du doan theo danh muc
-│   │   ├── AnomalyScreen.kt        # Phat hien bat thuong
-│   │   ├── SpendingAlertScreen.kt   # Canh bao chi cao
+│   ├── auth/                        # Đăng nhập, đăng ký, OTP, quên mật khẩu
+│   ├── transaction/                 # CRUD giao dịch
+│   │   ├── input/                   # Màn hình nhập giao dịch
+│   │   ├── edit/                    # Màn hình sửa giao dịch
+│   │   ├── list/                    # Danh sách giao dịch
+│   │   └── fixed/                   # Giao dịch cố định
+│   ├── budget/                      # Hạn mức ngân sách
+│   ├── report/                      # Báo cáo thu chi
+│   ├── forecast/                    # AI dashboard & dự đoán
+│   │   ├── ForecastScreen.kt        # AI tổng hợp dashboard
+│   │   ├── CategoryForecastScreen.kt# Dự đoán theo danh mục
+│   │   ├── AnomalyScreen.kt        # Phát hiện bất thường
+│   │   ├── SpendingAlertScreen.kt   # Cảnh báo chi cao
 │   │   └── OnDeviceForecastScreen.kt# LSTM on-device
-│   ├── settings/                    # Cai dat ung dung
-│   ├── navigation/                  # Bottom navigation bar
-│   └── common/                      # Man hinh dung chung
+│   ├── settings/                    # Cài đặt ứng dụng
+│   ├── navigation/                  # Thanh điều hướng dưới
+│   └── common/                      # Màn hình dùng chung
 ├── components/
-│   ├── ChartAndDialogComponents.kt  # Bieu do & dialog
-│   ├── FormComponents.kt           # Form input components
-│   └── LayoutComponents.kt         # Layout dung chung
+│   ├── ChartAndDialogComponents.kt  # Biểu đồ & hộp thoại
+│   ├── FormComponents.kt           # Thành phần nhập liệu
+│   └── LayoutComponents.kt         # Bố cục dùng chung
 ├── security/
-│   └── SecurityGuard.kt            # Anti-tampering protection
+│   └── SecurityGuard.kt            # Chống giả mạo ứng dụng
 └── ui/
-    └── theme/                       # Material 3 theme
+    └── theme/                       # Chủ đề Material 3
 ```
 
-## Ket noi voi he thong
+## Kết nối với hệ thống
 
-App nay hoat dong cung:
-- **Spring Boot Backend** — xu ly API, luu tru du lieu, chay AI predictions phia server
-- **MLOps Server** — train va serve model AI (LightGBM, Isolation Forest, LSTM)
+Ứng dụng này hoạt động cùng:
+- **Spring Boot Backend** — xử lý API, lưu trữ dữ liệu, chạy AI predictions phía server
+- **MLOps Server** — train và serve model AI (LightGBM, Isolation Forest, LSTM)
 
 ```
 Android App  ──HTTPS──>  Spring Boot Backend  ──HTTP──>  MLOps FastAPI
      │                         │
-     │                         ├── MySQL (du lieu giao dich)
+     │                         ├── MySQL (dữ liệu giao dịch)
      │                         └── Upload/Download TFLite model
      │
-     └── TFLite (on-device LSTM inference)
+     └── TFLite (suy luận LSTM trên thiết bị)
 ```
 
-## Bao mat
+## Bảo mật
 
-- **JWT** — Access token + Refresh token tu dong
-- **EncryptedSharedPreferences** — Luu token an toan (Tink AES)
-- **SSL Pinning** — Chi ket noi server tin cay
-- **SecurityGuard** — Kiem tra chu ky APK, chong debug, chong clone
-- **Network Security Config** — Cau hinh certificate trust
+- **JWT** — Access token + Refresh token tự động
+- **EncryptedSharedPreferences** — Lưu token an toàn (Tink AES)
+- **SSL Pinning** — Chỉ kết nối server tin cậy
+- **SecurityGuard** — Kiểm tra chữ ký APK, chống debug, chống clone
+- **Network Security Config** — Cấu hình certificate trust
